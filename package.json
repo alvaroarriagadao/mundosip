@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "hero:video": "bash scripts/hero-video.sh",
+    "hero:comparar": "bash scripts/hero-video-comparar.sh"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",

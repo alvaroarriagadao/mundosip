@@ -42,3 +42,7 @@ next-env.d.ts
 
 # material fuente (renders 4K, video original) — vive fuera del repo
 /assets
+
+# respaldos locales de video del hero
+public/videos/_backup/
+public/videos/_comparar/
