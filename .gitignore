@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# material fuente (renders 4K, video original) — vive fuera del repo
+/assets

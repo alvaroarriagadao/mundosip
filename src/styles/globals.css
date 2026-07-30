@@ -1,0 +1,47 @@
+/* Globales mínimos: lo demás vive en el theme de MUI */
+
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: #b98a4e;
+  color: #f6f1ea;
+}
+
+:focus-visible {
+  outline: 2px solid #b98a4e;
+  outline-offset: 3px;
+}
+
+/* Lenis (scroll suave) */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Cortesía global para usuarios con movimiento reducido:
+   mata animaciones y transiciones CSS (Framer se maneja por hook) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
