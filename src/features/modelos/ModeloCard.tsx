@@ -99,7 +99,20 @@ export default function ModeloCard({ modelo }: { modelo: Modelo }) {
           </Typography>
         </Box>
 
-        <Typography sx={{ color: 'text.secondary', fontSize: '1rem', lineHeight: 1.6, flex: 1 }}>
+        {/* Altura fija a 3 líneas: todas las cards miden lo mismo sin importar
+            el largo del resumen que escriba el admin */}
+        <Typography
+          sx={{
+            color: 'text.secondary',
+            fontSize: '1rem',
+            lineHeight: 1.6,
+            height: '4.8em',
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 3,
+            overflow: 'hidden',
+          }}
+        >
           {modelo.resumen}
         </Typography>
 
@@ -111,6 +124,7 @@ export default function ModeloCard({ modelo }: { modelo: Modelo }) {
 
         <Box
           sx={{
+            mt: 'auto',
             borderTop: '1px solid',
             borderColor: 'divider',
             pt: 2.5,

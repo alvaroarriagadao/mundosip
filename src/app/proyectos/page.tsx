@@ -7,7 +7,6 @@ import Eyebrow from '@/components/ui/Eyebrow';
 import Section from '@/components/ui/Section';
 import ProjectsGallery from '@/features/proyectos/ProjectsGallery';
 import { getProyectos, getRegionesProyectos } from '@/data/repository';
-import { layout } from '@/theme/tokens';
 
 export const metadata: Metadata = {
   title: 'Proyectos',
@@ -19,14 +18,14 @@ export default async function ProyectosPage() {
   const [proyectos, regiones] = await Promise.all([getProyectos(), getRegionesProyectos()]);
 
   return (
-    <Section tone="paper" sx={{ pt: `${layout.headerHeight.desktop + 80}px` }}>
+    <Section tone="paper" belowHeader>
       <Container>
         <Box
           sx={{
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: '7fr 5fr' },
             gap: { xs: 3, md: 10 },
-            alignItems: 'end',
+            alignItems: 'start',
             mb: { xs: 4, md: 6 },
           }}
         >
@@ -36,7 +35,7 @@ export default async function ProyectosPage() {
               Casas que ya se viven.
             </Typography>
           </Box>
-          <Typography variant="subtitle1" sx={{ color: 'text.secondary', maxWidth: 460 }}>
+          <Typography variant="subtitle1" sx={{ color: 'text.secondary', maxWidth: 460, alignSelf: 'end' }}>
             Cada proyecto partió como un kit MundoSIP y hoy es el refugio de una familia. Filtra por
             región y entra a conocerlos.
           </Typography>

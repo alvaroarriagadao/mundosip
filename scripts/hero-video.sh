@@ -78,17 +78,22 @@ if [[ "$LOOP" == "suave" ]]; then
     DUR_EF="$DURA"
   else
     DUR_TOTAL=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$ENTRADA")
-    DUR_EF=$(echo "$DUR_TOTAL - ${DESDE:-0}" | bc)
+    DUR_EF=$(awk -v a="$DUR_TOTAL" -v b="${DESDE:-0}" 'BEGIN{printf "%.3f", a-b}')
   fi
-  OFFSET=$(echo "$DUR_EF - $FADE" | bc)
+  # Para que el loop no tenga costura, el video debe TERMINAR en el mismo
+  # frame en que EMPIEZA. Por eso el cuerpo arranca en el segundo $FADE y
+  # el cruce (los primeros $FADE segundos) se disuelve justo al final:
+  #   inicio = V($FADE)  ...  final = V($FADE)  → coinciden exactas
+  OFFSET=$(awk -v d="$DUR_EF" -v f="$FADE" 'BEGIN{printf "%.3f", d-2*f}')
+  # El cruce completa el alpha unos frames antes de terminar, así el último
+  # frame es exactamente el frame de arranque y el loop no salta.
+  FADE_D=$(awk -v f="$FADE" 'BEGIN{printf "%.3f", f*0.85}')
 
-  # Superpone el primer segundo (apareciendo en alpha) sobre el último:
-  # al reiniciar el loop la imagen ya coincide y no se nota el corte.
   ffmpeg -y -loglevel error ${RECORTE[@]+"${RECORTE[@]}"} -i "$ENTRADA" -filter_complex \
 "[0:v]scale=${ANCHO}:-2,fps=30,split[cuerpo][inicio];\
-[inicio]trim=duration=${FADE},format=yuva420p,fade=t=in:st=0:d=${FADE}:alpha=1,setpts=PTS+${OFFSET}/TB[cruce];\
-[cuerpo]setpts=PTS-STARTPTS[base];\
-[base][cruce]overlay=format=auto,format=yuv420p[v]" \
+[inicio]trim=duration=${FADE},format=yuva420p,fade=t=in:st=0:d=${FADE_D}:alpha=1,setpts=PTS+${OFFSET}/TB[cruce];\
+[cuerpo]trim=start=${FADE},setpts=PTS-STARTPTS[base];\
+[base][cruce]overlay=format=auto:eof_action=pass,format=yuv420p[v]" \
     -map "[v]" "${X264[@]}" "$SALIDA_DIR/hero.mp4"
 else
   ffmpeg -y -loglevel error ${RECORTE[@]+"${RECORTE[@]}"} -i "$ENTRADA" \

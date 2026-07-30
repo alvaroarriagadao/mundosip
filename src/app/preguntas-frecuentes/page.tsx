@@ -10,7 +10,7 @@ import Reveal from '@/components/ui/Reveal';
 import Section from '@/components/ui/Section';
 import FaqAccordion from '@/features/faqs/FaqAccordion';
 import { getFaqs } from '@/data/repository';
-import { colors, layout, radii } from '@/theme/tokens';
+import { colors, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
 
 export const metadata: Metadata = {
@@ -25,7 +25,7 @@ export default async function PreguntasFrecuentesPage() {
   const faqs = await getFaqs();
 
   return (
-    <Section tone="paper" sx={{ pt: `${layout.headerHeight.desktop + 48}px`, pb: { xs: 8, md: 12 } }}>
+    <Section tone="paper" belowHeader sx={{ pb: { xs: 8, md: 12 } }}>
       <Container>
         {/* ── Header: título a la izquierda, imagen a la derecha ── */}
         <Box
@@ -33,7 +33,9 @@ export default async function PreguntasFrecuentesPage() {
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: '1.05fr 0.95fr' },
             gap: { xs: 4, md: 8 },
-            alignItems: 'center',
+            // 'start' y no 'center': centrado, la imagen (más alta) empuja el
+            // titular hacia abajo y deja de coincidir con las otras páginas
+            alignItems: 'start',
             mb: { xs: 6, md: 10 },
           }}
         >

@@ -9,7 +9,7 @@ import Reveal from '@/components/ui/Reveal';
 import Section from '@/components/ui/Section';
 import ModeloCard from '@/features/modelos/ModeloCard';
 import { getModelos } from '@/data/repository';
-import { colors } from '@/theme/tokens';
+import { layout } from '@/theme/tokens';
 
 export const metadata: Metadata = {
   title: 'Modelos',
@@ -19,75 +19,72 @@ export const metadata: Metadata = {
 
 export default async function ModelosPage() {
   const modelos = await getModelos();
-  const portadaHero = modelos[0]?.portada;
 
   return (
-    <>
-      {/* Hero con render difuminado de fondo */}
+    <Section tone="paper" belowHeader sx={{ position: 'relative', overflow: 'hidden' }}>
+      {/* Croquis arquitectónico como boceto de fondo, detrás del titular */}
       <Box
-        component="header"
+        aria-hidden
         sx={{
-          position: 'relative',
-          overflow: 'hidden',
-          bgcolor: colors.tealDeep,
-          color: colors.cream,
-          pt: { xs: 22, md: 28 },
-          pb: { xs: 10, md: 13 },
+          position: 'absolute',
+          top: { md: `${layout.headerHeight.desktop}px` },
+          right: { md: '-4%', lg: '-1%' },
+          width: { md: '58%', lg: '52%' },
+          aspectRatio: '1136 / 825',
+          display: { xs: 'none', md: 'block' },
+          opacity: 0.16,
+          pointerEvents: 'none',
+          maskImage: 'linear-gradient(100deg, transparent 0%, black 38%, black 78%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(100deg, transparent 0%, black 38%, black 78%, transparent 100%)',
         }}
       >
-        {portadaHero && (
-          <Image
-            src={portadaHero.url}
-            alt=""
-            aria-hidden
-            fill
-            priority
-            sizes="100vw"
-            style={{
-              objectFit: 'cover',
-              filter: 'blur(10px) brightness(0.9)',
-              transform: 'scale(1.08)',
-            }}
-          />
-        )}
-        <Box
-          aria-hidden
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            background:
-              'linear-gradient(180deg, rgba(13, 33, 41, 0.82) 0%, rgba(13, 33, 41, 0.6) 55%, rgba(13, 33, 41, 0.86) 100%)',
-          }}
+        <Image
+          src="/images/croquis.jpg"
+          alt=""
+          fill
+          priority
+          sizes="55vw"
+          style={{ objectFit: 'contain', objectPosition: 'top right' }}
         />
-        <Container sx={{ position: 'relative' }}>
-          <Eyebrow sx={{ color: colors.tanLight }}>Kit de autoconstrucción</Eyebrow>
-          <Typography variant="h1" component="h1" sx={{ mt: 2, maxWidth: '13ch' }}>
-            Nuestros Modelos
-          </Typography>
-          <Typography variant="subtitle1" sx={{ mt: 3, maxWidth: 560, color: 'rgba(246, 241, 234, 0.8)' }}>
+      </Box>
+
+      <Container sx={{ position: 'relative' }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '7fr 5fr' },
+            gap: { xs: 3, md: 10 },
+            alignItems: 'start',
+            // Más aire que en otras páginas: deja respirar el croquis del fondo
+            mb: { xs: 6, md: 14 },
+          }}
+        >
+          <Box>
+            <Eyebrow>Kit de autoconstrucción</Eyebrow>
+            <Typography variant="h1" component="h1" sx={{ mt: 2, maxWidth: '14ch' }}>
+              Casas listas para armar.
+            </Typography>
+          </Box>
+          <Typography variant="subtitle1" sx={{ color: 'text.secondary', maxWidth: 460, alignSelf: 'end' }}>
             Diseños propios en panel SIP, vendidos como kit listo para armar: planos, paneles
             dimensionados, fijaciones y capacitación en terreno incluidos.
           </Typography>
-        </Container>
-      </Box>
+        </Box>
 
-      <Section tone="cream">
-        <Container>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' },
-              gap: { xs: 3, md: 4 },
-            }}
-          >
-            {modelos.map((modelo, i) => (
-              <Reveal key={modelo.slug} delay={i * 0.1}>
-                <ModeloCard modelo={modelo} />
-              </Reveal>
-            ))}
-          </Box>
-        </Container>
-      </Section>
-    </>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' },
+            gap: { xs: 3, md: 4 },
+          }}
+        >
+          {modelos.map((modelo, i) => (
+            <Reveal key={modelo.slug} delay={i * 0.1}>
+              <ModeloCard modelo={modelo} />
+            </Reveal>
+          ))}
+        </Box>
+      </Container>
+    </Section>
   );
 }

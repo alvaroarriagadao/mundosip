@@ -13,7 +13,11 @@ export default function Eyebrow({ sx, children, ...rest }: TypographyProps) {
       {...rest}
       sx={[
         {
-          display: 'inline-flex',
+          // flex (no inline-flex) + fit-content: al ser block-level su posición
+          // no depende del strut de la línea del contenedor, así el kicker
+          // arranca exactamente a la misma altura en todas las páginas
+          display: 'flex',
+          width: 'fit-content',
           alignItems: 'center',
           gap: 1.5,
           color: 'secondary.main',
