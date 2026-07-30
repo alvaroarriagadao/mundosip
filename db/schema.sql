@@ -224,3 +224,14 @@ create table if not exists modelo_caracteristicas (
 );
 create index if not exists idx_modelo_caracteristicas
   on modelo_caracteristicas (modelo_id, orden);
+
+-- ------------------------------------------------------------
+--  MIGRACIÓN 003 — Kits: Inicial + extras del Full
+--  El Kit Full no repite la lista del Inicial: solo guarda lo que
+--  agrega (el piso). El radier no va en ningún kit: se cotiza aparte.
+-- ------------------------------------------------------------
+alter table kit_items drop constraint if exists kit_items_tipo_check;
+update kit_items set tipo = 'inicial' where tipo = 'basico';
+delete from kit_items where tipo = 'full';
+alter table kit_items add constraint kit_items_tipo_check
+  check (tipo in ('inicial','full_extra'));

@@ -27,9 +27,15 @@ export interface Modelo {
   descripcion: string;
   /** Puntos fuertes del diseño, ordenados (4–8) */
   caracteristicas: string[];
-  /** Ítems incluidos en cada kit, ordenados */
-  kitBasico: string[];
-  kitFull: string[];
+  /** Ítems del Kit Inicial, ordenados (la base que traen ambos kits) */
+  kitInicial: string[];
+  /**
+   * SOLO lo que el Kit Full agrega sobre el Inicial.
+   * Se modela como "extras" y no como lista completa para que la
+   * diferencia entre kits sea evidente y el admin no duplique datos.
+   * El primero se muestra como diferenciador destacado.
+   */
+  kitFullExtras: string[];
   /** Render que representa al modelo en listado y hero de la ficha */
   portada: ImagenModelo;
   /** Galería de la ficha (2–12 imágenes) */

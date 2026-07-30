@@ -1,7 +1,7 @@
 import type { Modelo } from '@/features/modelos/modelo.types';
 
-/** Ítems del Kit Básico (mismos para todos los modelos hoy; editables por modelo en fase 2) */
-const KIT_BASICO = [
+/** Ítems del Kit Inicial (mismos para todos los modelos hoy; editables por modelo en fase 2) */
+const KIT_INICIAL = [
   'Muros exteriores – panel SIP 94 mm',
   'Muros interiores – panel SIP 94 mm',
   'Cubierta – panel SIP 169 mm',
@@ -18,24 +18,13 @@ const KIT_BASICO = [
   'Capacitación en terreno antes de comenzar obra',
 ];
 
-/** Kit Full = Básico + piso estructural en panel SIP */
-const KIT_FULL = [
-  'Muros exteriores – panel SIP 94 mm',
-  'Muros interiores – panel SIP 94 mm',
-  'Cubierta – panel SIP 169 mm',
-  'Piso – panel SIP 169 mm',
-  'Todas las maderas verticales y horizontales de unión',
+/**
+ * Lo que el Kit Full agrega sobre el Inicial: el piso estructural.
+ * El radier NO va en ningún kit — se cotiza aparte según el terreno.
+ */
+const KIT_FULL_EXTRAS = [
+  'Piso – panel SIP 169 mm: la plataforma estructural de tu casa',
   'Todas las maderas de piso',
-  'Todas las fijaciones',
-  'Espuma poliuretano',
-  'Membrana hidrófuga',
-  'Planos generales de arquitectura',
-  'Planos de montaje',
-  'Dimensionado de paneles listo para armar',
-  'Instructivo de montaje',
-  'Plano esquemático de electricidad',
-  'Plano esquemático sanitario',
-  'Capacitación en terreno antes de comenzar obra',
 ];
 
 /**
@@ -62,8 +51,8 @@ export const modelos: Modelo[] = [
       'Volumen de servicios agrupado: menos metros de instalaciones',
       'Fachada mixta: madera clara + acento oscuro',
     ],
-    kitBasico: KIT_BASICO,
-    kitFull: KIT_FULL,
+    kitInicial: KIT_INICIAL,
+    kitFullExtras: KIT_FULL_EXTRAS,
     portada: { url: '/images/modelos/tulipan/portada.jpg', alt: 'Render del modelo Tulipán de 80 m²' },
     galeria: [
       { url: '/images/modelos/tulipan/galeria-1.jpg', alt: 'Fachada principal del modelo Tulipán' },
@@ -92,8 +81,8 @@ export const modelos: Modelo[] = [
       'Cocina integrada con vista al acceso',
       'Acento de madera oscura en el volumen central',
     ],
-    kitBasico: KIT_BASICO,
-    kitFull: KIT_FULL,
+    kitInicial: KIT_INICIAL,
+    kitFullExtras: KIT_FULL_EXTRAS,
     portada: { url: '/images/modelos/lupino/portada.jpg', alt: 'Render del modelo Lupino de 125 m²' },
     galeria: [
       { url: '/images/modelos/lupino/galeria-1.jpg', alt: 'Fachada principal del modelo Lupino' },
@@ -122,8 +111,8 @@ export const modelos: Modelo[] = [
       'Cuatro dormitorios y tres baños',
       'Fachada en madera clara con contrafuerte oscuro',
     ],
-    kitBasico: KIT_BASICO,
-    kitFull: KIT_FULL,
+    kitInicial: KIT_INICIAL,
+    kitFullExtras: KIT_FULL_EXTRAS,
     portada: { url: '/images/modelos/azucena/portada.jpg', alt: 'Render del modelo Azucena de 140 m²' },
     galeria: [
       { url: '/images/modelos/azucena/galeria-1.jpg', alt: 'Fachada principal del modelo Azucena' },

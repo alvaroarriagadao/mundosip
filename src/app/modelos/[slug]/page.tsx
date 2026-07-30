@@ -49,7 +49,7 @@ export default async function ModeloPage({ params }: ModeloPageProps) {
     <>
       <ModeloHero modelo={modelo} />
       <ModeloCaracteristicas nombre={modelo.nombre} caracteristicas={modelo.caracteristicas} />
-      <ModeloKits kitBasico={modelo.kitBasico} kitFull={modelo.kitFull} />
+      <ModeloKits kitInicial={modelo.kitInicial} kitFullExtras={modelo.kitFullExtras} />
       <GalleryMosaic nombre={modelo.nombre} imagenes={modelo.galeria} titulo="Recorre el modelo." />
 
       {/* Cierre con precio y CTA */}

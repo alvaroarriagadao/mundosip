@@ -23,41 +23,43 @@ insert into modelos (slug, nombre, superficie_m2, habitaciones, banos, precio_de
 on conflict (slug) do nothing;
 
 -- ------------------------------------------------------------
---  Kits Básico y Full (mismos ítems base para los tres modelos;
---  se ajustan por modelo desde el admin en fase 2)
+--  Kits: Inicial (base común) + extras del Full (el piso)
+--  El radier no va en ningún kit: se cotiza aparte por terreno.
 -- ------------------------------------------------------------
 insert into kit_items (modelo_id, tipo, texto, orden)
-select m.id, 'basico', t.texto, t.orden
+select m.id, 'inicial', t.texto, t.orden
 from modelos m,
 (values
   ('Muros exteriores – panel SIP 94 mm', 1),
   ('Muros interiores – panel SIP 94 mm', 2),
   ('Cubierta – panel SIP 169 mm', 3),
-  ('Maderas de unión dimensionadas', 4),
+  ('Todas las maderas verticales y horizontales de unión', 4),
   ('Todas las fijaciones', 5),
-  ('Planos generales de arquitectura', 6),
-  ('Instructivo de montaje', 7)
+  ('Espuma poliuretano', 6),
+  ('Membrana hidrófuga', 7),
+  ('Planos generales de arquitectura', 8),
+  ('Planos de montaje', 9),
+  ('Dimensionado de paneles listo para armar', 10),
+  ('Instructivo de montaje', 11),
+  ('Plano esquemático de electricidad', 12),
+  ('Plano esquemático sanitario', 13),
+  ('Capacitación en terreno antes de comenzar obra', 14)
 ) as t(texto, orden)
 where m.slug in ('tulipan','lupino','azucena')
   and not exists (
-    select 1 from kit_items k where k.modelo_id = m.id and k.tipo = 'basico'
+    select 1 from kit_items k where k.modelo_id = m.id and k.tipo = 'inicial'
   );
 
 insert into kit_items (modelo_id, tipo, texto, orden)
-select m.id, 'full', t.texto, t.orden
+select m.id, 'full_extra', t.texto, t.orden
 from modelos m,
 (values
-  ('Todo lo incluido en el Kit Básico', 1),
-  ('Espuma de poliuretano para sellos', 2),
-  ('Membrana hidrófuga', 3),
-  ('Planos de montaje detallados', 4),
-  ('Dimensionado listo para armar', 5),
-  ('Planos eléctricos y sanitarios', 6),
-  ('Capacitación de montaje en terreno', 7)
+  ('Piso – panel SIP 169 mm: la plataforma estructural de tu casa', 1),
+  ('Todas las maderas de piso', 2)
 ) as t(texto, orden)
 where m.slug in ('tulipan','lupino','azucena')
   and not exists (
-    select 1 from kit_items k where k.modelo_id = m.id and k.tipo = 'full'
+    select 1 from kit_items k where k.modelo_id = m.id and k.tipo = 'full_extra'
   );
 
 -- ------------------------------------------------------------
