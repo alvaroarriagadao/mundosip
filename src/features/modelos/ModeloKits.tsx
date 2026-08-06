@@ -11,6 +11,8 @@ import { colors, radii } from '@/theme/tokens';
 import { displayFamily, monoFamily } from '@/theme/typography';
 
 interface ModeloKitsProps {
+  /** Slug del modelo: los CTA llevan a su cotizador llave en mano */
+  modeloSlug: string;
   kitInicial: string[];
   /** Solo los extras del Full; el primero es el diferenciador destacado */
   kitFullExtras: string[];
@@ -68,7 +70,7 @@ function ItemsIncluidos({ items, dark = false }: { items: string[]; dark?: boole
  * Full cierra con un bloque destacado con lo único que agrega: el piso.
  * El radier no va en ningún kit — se cotiza aparte.
  */
-export default function ModeloKits({ kitInicial, kitFullExtras }: ModeloKitsProps) {
+export default function ModeloKits({ modeloSlug, kitInicial, kitFullExtras }: ModeloKitsProps) {
   const [principal, ...otrosExtras] = kitFullExtras;
   const destacado = principal ? partirExtra(principal) : null;
 
@@ -176,7 +178,13 @@ export default function ModeloKits({ kitInicial, kitFullExtras }: ModeloKitsProp
                 )}
               </Box>
 
-              <Button variant="outlined" color="primary" arrow href="/contacto" sx={{ alignSelf: 'flex-start' }}>
+              <Button
+                variant="outlined"
+                color="primary"
+                arrow
+                href={`/modelos/${modeloSlug}/cotizar?kit=inicial`}
+                sx={{ alignSelf: 'flex-start' }}
+              >
                 Cotizar Kit Inicial
               </Button>
             </Box>
@@ -317,7 +325,7 @@ export default function ModeloKits({ kitInicial, kitFullExtras }: ModeloKitsProp
                 variant="contained"
                 color="secondary"
                 arrow
-                href="/contacto"
+                href={`/modelos/${modeloSlug}/cotizar?kit=full`}
                 sx={{ position: 'relative', alignSelf: 'flex-start' }}
               >
                 Cotizar Kit Full

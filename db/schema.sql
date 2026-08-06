@@ -235,3 +235,86 @@ update kit_items set tipo = 'inicial' where tipo = 'basico';
 delete from kit_items where tipo = 'full';
 alter table kit_items add constraint kit_items_tipo_check
   check (tipo in ('inicial','full_extra'));
+
+-- ------------------------------------------------------------
+--  MIGRACIÓN 004 — Sistema de cotizaciones llave en mano
+--
+--  Una PLANTILLA por modelo × kit (Tulipán/full, Tulipán/inicial…)
+--  espeja los Excel de assets/cotizaciones: secciones N°1..N°12,
+--  cada una con ítems (cantidad × precio unitario). Los totales
+--  NUNCA se guardan en la plantilla: se calculan siempre.
+--
+--  Cada cotización que un cliente genera queda en
+--  cotizaciones_emitidas con un SNAPSHOT jsonb de lo cotizado:
+--  si mañana cambian los precios, el folio emitido sigue siendo
+--  reproducible tal como se entregó (validez de 7 días).
+-- ------------------------------------------------------------
+create table if not exists cotizacion_plantillas (
+  id                uuid primary key default gen_random_uuid(),
+  modelo_slug       text not null
+                    check (modelo_slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
+  kit               text not null check (kit in ('inicial','full')),
+  titulo            text not null,             -- "Modelo Tulipán 80 m² llave en mano"
+  descuento_nombre  text,                      -- "Desc. Invierno" (null = sin descuento)
+  descuento_pct     numeric(5,2) not null default 0 check (descuento_pct >= 0 and descuento_pct < 100),
+  iva_pct           numeric(5,2) not null default 19,
+  validez_dias      integer not null default 7,
+  condiciones_pago  text,
+  notas             text[] not null default '{}',
+  publicado         boolean not null default true,
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now(),
+  unique (modelo_slug, kit)
+);
+
+drop trigger if exists trg_cotizacion_plantillas_updated on cotizacion_plantillas;
+create trigger trg_cotizacion_plantillas_updated
+  before update on cotizacion_plantillas
+  for each row execute function set_updated_at();
+
+-- Las categorías que el cliente marca/desmarca (Obras preliminares, Obra gruesa…)
+create table if not exists cotizacion_secciones (
+  id            uuid primary key default gen_random_uuid(),
+  plantilla_id  uuid not null references cotizacion_plantillas(id) on delete cascade,
+  codigo        text not null,                 -- "N°1"
+  nombre        text not null,                 -- "Obras preliminares"
+  obligatoria   boolean not null default false, -- sin esto no hay casa: va marcada y bloqueada
+  orden         integer not null default 0
+);
+create index if not exists idx_cotizacion_secciones
+  on cotizacion_secciones (plantilla_id, orden);
+
+-- El desglose de cada sección. total = cantidad × precio_unitario, calculado.
+create table if not exists cotizacion_items (
+  id               uuid primary key default gen_random_uuid(),
+  seccion_id       uuid not null references cotizacion_secciones(id) on delete cascade,
+  codigo           text,                       -- "1.1"
+  descripcion      text not null,
+  unidad           text not null,              -- gl, m2, m3, ml, uni, unidad, ct, hrs
+  cantidad         numeric(12,3) not null check (cantidad > 0),
+  precio_unitario  integer not null check (precio_unitario >= 0),  -- CLP
+  orden            integer not null default 0
+);
+create index if not exists idx_cotizacion_items
+  on cotizacion_items (seccion_id, orden);
+
+-- Cotizaciones generadas por clientes desde el sitio (también son leads)
+create table if not exists cotizaciones_emitidas (
+  id             uuid primary key default gen_random_uuid(),
+  folio_num      bigint generated always as identity,  -- correlativo → "COT-000123"
+  modelo_slug    text not null,
+  kit            text not null,
+  nombre         text not null,
+  email          text not null,
+  telefono       text,
+  snapshot       jsonb not null,   -- secciones+ítems+precios tal como se emitió
+  neto_clp       integer not null,
+  descuento_clp  integer not null default 0,
+  iva_clp        integer not null,
+  total_clp      integer not null,
+  created_at     timestamptz not null default now()
+);
+create index if not exists idx_cotizaciones_emitidas_created
+  on cotizaciones_emitidas (created_at desc);
+create index if not exists idx_cotizaciones_emitidas_modelo
+  on cotizaciones_emitidas (modelo_slug, kit);

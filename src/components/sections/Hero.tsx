@@ -8,7 +8,7 @@ import Button from '@/components/ui/Button';
 import Container from '@/components/ui/Container';
 import Eyebrow from '@/components/ui/Eyebrow';
 import { EASE, lineReveal, stagger } from '@/lib/motion';
-import { colors, layout } from '@/theme/tokens';
+import { colors, layout, scrims } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
 
 interface HeroProps {
@@ -97,10 +97,7 @@ function HeroBackdrop({ videoSrc, posterSrc }: HeroProps) {
         sx={{
           position: 'absolute',
           inset: 0,
-          background: `
-            linear-gradient(180deg, rgba(13, 33, 41, 0.55) 0%, rgba(13, 33, 41, 0.2) 34%, rgba(13, 33, 41, 0.62) 100%),
-            linear-gradient(90deg, rgba(13, 33, 41, 0.42) 0%, rgba(13, 33, 41, 0.1) 58%, rgba(13, 33, 41, 0.02) 100%)
-          `,
+          background: scrims.heroVideo,
         }}
       />
     </Box>

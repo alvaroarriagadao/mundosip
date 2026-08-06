@@ -121,7 +121,24 @@ export default function Footer() {
             <Box component="a" href={`mailto:${CONTACTO.email}`} sx={footerLinkSx}>
               {CONTACTO.email}
             </Box>
-            <Box component="a" href={CONTACTO.telefonoHref} sx={footerLinkSx}>
+            {/* Enlace tel: solo en pantallas táctiles: en escritorio abre
+                Skype/FaceTime, que casi nadie usa. Ahí va como texto. */}
+            <Box
+              component="a"
+              href={CONTACTO.telefonoHref}
+              sx={{ ...footerLinkSx, display: 'none', '@media (hover: none) and (pointer: coarse)': { display: 'inline-flex' } }}
+            >
+              <Phone size={15} aria-hidden />
+              {CONTACTO.telefonoDisplay}
+            </Box>
+            <Box
+              sx={{
+                ...footerLinkSx,
+                cursor: 'text',
+                '&:hover': { color: 'rgba(246, 241, 234, 0.75)' },
+                '@media (hover: none) and (pointer: coarse)': { display: 'none' },
+              }}
+            >
               <Phone size={15} aria-hidden />
               {CONTACTO.telefonoDisplay}
             </Box>
