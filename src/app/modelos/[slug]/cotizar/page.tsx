@@ -50,9 +50,14 @@ export default async function CotizarPage({ params, searchParams }: CotizarPageP
   const modelo = await getModeloBySlug(slug);
   if (!modelo) notFound();
 
-  const plantillas = (await getPlantillasDeModelo(slug)).sort(
-    (a, b) => ORDEN_KIT[a.kit] - ORDEN_KIT[b.kit],
-  );
+  // Si la base no responde, la página degrada al bloque "escríbenos" en vez
+  // de reventar: el cliente igual llega a contacto y no perdemos el lead.
+  const plantillas = await getPlantillasDeModelo(slug)
+    .then((lista) => [...lista].sort((a, b) => ORDEN_KIT[a.kit] - ORDEN_KIT[b.kit]))
+    .catch((error) => {
+      console.error('[cotizar] no se pudieron cargar las plantillas', error);
+      return [];
+    });
   const kitInicialSeleccion: KitCotizacion = kit === 'full' || kit === 'inicial' ? kit : 'inicial';
 
   return (
