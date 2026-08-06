@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { Check, Info, Layers, Minus, Plus } from 'lucide-react';
+import { Check, Info, Layers, Plus } from 'lucide-react';
 
 import Button from '@/components/ui/Button';
 import Container from '@/components/ui/Container';
@@ -33,25 +33,25 @@ const kickerSx = {
   textTransform: 'uppercase',
 } as const;
 
-/** Lista de ítems incluidos, con check */
+/** Lista de ítems incluidos, con check. Compacta: son 14 líneas por card. */
 function ItemsIncluidos({ items, dark = false }: { items: string[]; dark?: boolean }) {
   return (
     <Box
       component="ul"
-      sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 1.4 }}
+      sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexDirection: 'column', gap: 0.85 }}
     >
       {items.map((item) => (
-        <Box key={item} component="li" sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+        <Box key={item} component="li" sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.25 }}>
           <Box
             aria-hidden
-            sx={{ color: dark ? 'rgba(246, 241, 234, 0.5)' : colors.tanDark, mt: 0.35, flexShrink: 0 }}
+            sx={{ color: dark ? 'rgba(246, 241, 234, 0.5)' : colors.tanDark, mt: 0.3, flexShrink: 0 }}
           >
-            <Check size={16} strokeWidth={2.5} />
+            <Check size={15} strokeWidth={2.5} />
           </Box>
           <Typography
             sx={{
-              fontSize: '0.98rem',
-              lineHeight: 1.5,
+              fontSize: '0.92rem',
+              lineHeight: 1.4,
               color: dark ? 'rgba(246, 241, 234, 0.88)' : 'text.primary',
             }}
           >
@@ -75,7 +75,8 @@ export default function ModeloKits({ modeloSlug, kitInicial, kitFullExtras }: Mo
   const destacado = principal ? partirExtra(principal) : null;
 
   return (
-    <Section tone="cream">
+    // id="kits": destino del botón "Cotizar este modelo" del hero
+    <Section tone="cream" id="kits" sx={{ pt: { xs: 8, md: 11 }, pb: { xs: 8, md: 11 } }}>
       <Container>
         <Box
           sx={{
@@ -83,7 +84,7 @@ export default function ModeloKits({ modeloSlug, kitInicial, kitFullExtras }: Mo
             gridTemplateColumns: { xs: '1fr', md: '6fr 6fr' },
             gap: { xs: 3, md: 10 },
             alignItems: 'end',
-            mb: { xs: 4, md: 6 },
+            mb: { xs: 3, md: 4 },
           }}
         >
           <Reveal>
@@ -118,8 +119,8 @@ export default function ModeloKits({ modeloSlug, kitInicial, kitFullExtras }: Mo
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 3,
-                p: { xs: 3, md: 4 },
+                gap: 2.25,
+                p: { xs: 2.5, md: 3 },
                 borderRadius: `${radii.lg}px`,
                 bgcolor: 'background.paper',
                 border: '1px solid',
@@ -135,47 +136,8 @@ export default function ModeloKits({ modeloSlug, kitInicial, kitFullExtras }: Mo
                 </Typography>
               </Box>
 
-              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2.25 }}>
                 <ItemsIncluidos items={kitInicial} />
-
-                {/* Espejo del bloque destacado del Full: hace explícita la comparación */}
-                {destacado && (
-                  <Box
-                    sx={{
-                      mt: 'auto',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 2,
-                      p: 2.25,
-                      borderRadius: `${radii.md}px`,
-                      bgcolor: 'background.default',
-                      border: '1px dashed',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Box
-                      aria-hidden
-                      sx={{
-                        flexShrink: 0,
-                        width: 34,
-                        height: 34,
-                        borderRadius: `${radii.sm}px`,
-                        display: 'grid',
-                        placeItems: 'center',
-                        bgcolor: 'rgba(107, 122, 130, 0.12)',
-                        color: colors.muted,
-                      }}
-                    >
-                      <Minus size={18} strokeWidth={2.5} />
-                    </Box>
-                    <Typography sx={{ fontSize: '0.95rem', lineHeight: 1.45, color: 'text.secondary' }}>
-                      <Box component="strong" sx={{ color: 'text.primary', fontWeight: 700 }}>
-                        Sin piso.
-                      </Box>{' '}
-                      Lo resuelves por tu cuenta.
-                    </Typography>
-                  </Box>
-                )}
               </Box>
 
               <Button
@@ -198,8 +160,8 @@ export default function ModeloKits({ modeloSlug, kitInicial, kitFullExtras }: Mo
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 3,
-                p: { xs: 3, md: 4 },
+                gap: 2.25,
+                p: { xs: 2.5, md: 3 },
                 borderRadius: `${radii.lg}px`,
                 bgcolor: colors.tealDeep,
                 color: colors.cream,
@@ -243,15 +205,15 @@ export default function ModeloKits({ modeloSlug, kitInicial, kitFullExtras }: Mo
                 </Typography>
               </Box>
 
-              <Box sx={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', gap: 2.25 }}>
                 <ItemsIncluidos items={kitInicial} dark />
 
                 {/* Lo único que agrega el Full, visualmente separado */}
                 {destacado && (
                   <Box sx={{ mt: 'auto' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, mb: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, mb: 1.5 }}>
                       <Typography component="p" sx={{ ...kickerSx, color: colors.tanLight, whiteSpace: 'nowrap' }}>
-                        Solo en Kit Full
+                        Incluye
                       </Typography>
                       <Box aria-hidden sx={{ flex: 1, height: '1px', bgcolor: 'rgba(246, 241, 234, 0.18)' }} />
                     </Box>
@@ -303,7 +265,7 @@ export default function ModeloKits({ modeloSlug, kitInicial, kitFullExtras }: Mo
                         {otrosExtras.length > 0 && (
                           <Box
                             component="ul"
-                            sx={{ listStyle: 'none', m: 0, mt: 1.25, p: 0, display: 'flex', flexDirection: 'column', gap: 0.85 }}
+                            sx={{ listStyle: 'none', m: 0, mt: 1, p: 0, display: 'flex', flexDirection: 'column', gap: 0.7 }}
                           >
                             {otrosExtras.map((item) => (
                               <Box key={item} component="li" sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>

@@ -209,7 +209,8 @@ export default function ModeloHero({ modelo }: { modelo: Modelo }) {
                   Incluye planos, paneles dimensionados, fijaciones y capacitación en terreno.
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-                  <Button variant="contained" color="secondary" arrow href="/contacto">
+                  {/* Baja a "Elige tu kit": el cotizador arranca eligiendo kit */}
+                  <Button variant="contained" color="secondary" arrow href="#kits">
                     Cotizar este modelo
                   </Button>
                   <Button
