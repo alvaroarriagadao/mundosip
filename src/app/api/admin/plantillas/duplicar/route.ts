@@ -63,10 +63,10 @@ export async function POST(request: Request) {
     // Copia de cabecera + secciones; el título queda marcado para editar
     const [nueva] = (await sql`
       insert into cotizacion_plantillas
-        (modelo_slug, kit, titulo, descuento_nombre, descuento_pct, iva_pct, validez_dias, condiciones_pago, notas)
+        (modelo_slug, kit, titulo, descuento_nombre, descuento_pct, iva_pct, validez_dias, condiciones_pago, notas, superficie_m2)
       select ${modeloSlug}, kit,
              ${'MODELO ' + modeloSlug.toUpperCase().replaceAll('-', ' ') + ' LLAVE EN MANO — REVISAR TÍTULO'},
-             descuento_nombre, descuento_pct, iva_pct, validez_dias, condiciones_pago, notas
+             descuento_nombre, descuento_pct, iva_pct, validez_dias, condiciones_pago, notas, superficie_m2
       from cotizacion_plantillas where id = ${plantillaId}
       returning id
     `) as Array<{ id: string }>;

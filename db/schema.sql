@@ -318,3 +318,14 @@ create index if not exists idx_cotizaciones_emitidas_created
   on cotizaciones_emitidas (created_at desc);
 create index if not exists idx_cotizaciones_emitidas_modelo
   on cotizaciones_emitidas (modelo_slug, kit);
+
+-- ------------------------------------------------------------
+--  MIGRACIÓN 005 — Superficie por plantilla
+--
+--  El "costo x m²" de las notas ya no es un texto fijo: se calcula
+--  en cada emisión como neto con descuento ÷ superficie. La
+--  superficie viene del Excel ("TULIPAN 80M2 …") y es editable
+--  en el admin.
+-- ------------------------------------------------------------
+alter table cotizacion_plantillas add column if not exists superficie_m2 integer
+  check (superficie_m2 is null or superficie_m2 > 0);

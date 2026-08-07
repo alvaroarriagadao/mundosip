@@ -49,6 +49,8 @@ export interface PlantillaCotizacion {
   validezDias: number;
   condicionesPago: string | null;
   notas: string[];
+  /** m² del modelo: el "costo x m²" de cada emisión = neto c/desc ÷ esto */
+  superficieM2: number | null;
   secciones: SeccionCotizacion[];
 }
 

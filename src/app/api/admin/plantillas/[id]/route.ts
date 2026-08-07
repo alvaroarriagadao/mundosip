@@ -32,7 +32,7 @@ export async function PUT(request: Request, { params }: Contexto) {
     return NextResponse.json({ ok: false, error: 'Revisa los datos de la plantilla.' }, { status: 422 });
   }
 
-  const { titulo, descuentoNombre, descuentoPct, condicionesPago, notas } = parsed.data;
+  const { titulo, descuentoNombre, descuentoPct, ivaPct, superficieM2, condicionesPago, notas } = parsed.data;
 
   try {
     const sql = neon(process.env.DATABASE_URL!);
@@ -41,6 +41,8 @@ export async function PUT(request: Request, { params }: Contexto) {
       set titulo = ${titulo},
           descuento_nombre = ${descuentoNombre},
           descuento_pct = ${descuentoPct},
+          iva_pct = ${ivaPct},
+          superficie_m2 = ${superficieM2},
           condiciones_pago = ${condicionesPago},
           notas = ${notas}
       where id = ${id}

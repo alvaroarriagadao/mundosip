@@ -25,6 +25,7 @@ interface FilaPlantilla {
   validez_dias: number;
   condiciones_pago: string | null;
   notas: string[];
+  superficie_m2: number | null;
 }
 
 interface FilaSeccion {
@@ -85,6 +86,7 @@ async function cargarPlantillas(filas: FilaPlantilla[]): Promise<PlantillaCotiza
     validezDias: p.validez_dias,
     condicionesPago: p.condiciones_pago,
     notas: p.notas ?? [],
+    superficieM2: p.superficie_m2,
     secciones: secciones
       .filter((s) => s.plantilla_id === p.id)
       .map((s) => ({
@@ -109,7 +111,7 @@ export async function getPlantillasDeModelo(modeloSlug: string): Promise<Plantil
   const sql = sqlCliente();
   const filas = (await sql`
     select id, modelo_slug, kit, titulo, descuento_nombre, descuento_pct::float8 as descuento_pct,
-           iva_pct::float8 as iva_pct, validez_dias, condiciones_pago, notas
+           iva_pct::float8 as iva_pct, validez_dias, condiciones_pago, notas, superficie_m2
     from cotizacion_plantillas
     where modelo_slug = ${modeloSlug} and publicado
     order by kit
@@ -202,7 +204,7 @@ export async function getPlantillaPorId(id: string): Promise<PlantillaCotizacion
   const sql = sqlCliente();
   const filas = (await sql`
     select id, modelo_slug, kit, titulo, descuento_nombre, descuento_pct::float8 as descuento_pct,
-           iva_pct::float8 as iva_pct, validez_dias, condiciones_pago, notas
+           iva_pct::float8 as iva_pct, validez_dias, condiciones_pago, notas, superficie_m2
     from cotizacion_plantillas
     where id = ${id}
   `) as FilaPlantilla[];

@@ -108,7 +108,10 @@ function parsearArchivo(nombreArchivo) {
       ? 'inicial'
       : null;
   if (!kit) throw new Error(`No pude deducir el kit desde el nombre: ${nombreArchivo}`);
-  return { slug, kit };
+  // "TULIPAN 80M2 …" → superficie para calcular el costo x m² por emisión
+  const matchM2 = nombreArchivo.match(/(\d+)\s*M2/i);
+  const superficieM2 = matchM2 ? Number(matchM2[1]) : null;
+  return { slug, kit, superficieM2 };
 }
 
 async function leerCotizacion(ruta) {
@@ -155,7 +158,10 @@ async function leerCotizacion(ruta) {
       return;
     }
     if (zona === 'notas') {
-      if (a.startsWith('-')) plantilla.notas.push(a.replace(/^-\s*/, ''));
+      // La nota "costo de $X x m2" se calcula en cada emisión: no se importa
+      if (a.startsWith('-') && !/x\s*m2|x\s*m²/i.test(a)) {
+        plantilla.notas.push(a.replace(/^-\s*/, ''));
+      }
       return;
     }
     if (zona === 'condiciones') {
@@ -227,21 +233,22 @@ async function importar() {
 
   try {
     for (const archivo of archivos.sort()) {
-      const { slug, kit } = parsearArchivo(archivo);
+      const { slug, kit, superficieM2 } = parsearArchivo(archivo);
       const plantilla = await leerCotizacion(resolve(process.cwd(), CARPETA, archivo));
 
       await cliente.query('begin');
       try {
         const res = await cliente.query(
           `insert into cotizacion_plantillas
-             (modelo_slug, kit, titulo, descuento_nombre, descuento_pct, condiciones_pago, notas)
-           values ($1, $2, $3, $4, $5, $6, $7)
+             (modelo_slug, kit, titulo, descuento_nombre, descuento_pct, condiciones_pago, notas, superficie_m2)
+           values ($1, $2, $3, $4, $5, $6, $7, $8)
            on conflict (modelo_slug, kit) do update set
              titulo = excluded.titulo,
              descuento_nombre = excluded.descuento_nombre,
              descuento_pct = excluded.descuento_pct,
              condiciones_pago = excluded.condiciones_pago,
-             notas = excluded.notas
+             notas = excluded.notas,
+             superficie_m2 = excluded.superficie_m2
            returning id`,
           [
             slug,
@@ -251,6 +258,7 @@ async function importar() {
             plantilla.descuentoPct,
             plantilla.condicionesPago,
             plantilla.notas,
+            superficieM2,
           ],
         );
         const plantillaId = res.rows[0].id;

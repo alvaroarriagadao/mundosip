@@ -23,8 +23,20 @@ export const plantillaUpdateSchema = z.object({
   titulo: z.string().trim().min(4, 'Título muy corto').max(120),
   descuentoNombre: z.string().trim().max(80).nullable(),
   descuentoPct: z.number().min(0).max(99.99),
+  ivaPct: z.number().min(0).max(50),
+  superficieM2: z.number().int().positive().max(10_000).nullable(),
   condicionesPago: z.string().trim().max(1000).nullable(),
   notas: z.array(z.string().trim().min(1).max(300)).max(20),
+});
+
+export const seccionCreateSchema = z.object({
+  plantillaId: z.uuid(),
+  nombre: z.string().trim().min(2, 'Nombre muy corto').max(80),
+});
+
+export const seccionUpdateSchema = z.object({
+  nombre: z.string().trim().min(2, 'Nombre muy corto').max(80),
+  obligatoria: z.boolean(),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

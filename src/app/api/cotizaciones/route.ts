@@ -62,6 +62,16 @@ export async function POST(request: Request) {
     const secciones = seccionesElegidas(plantilla, new Set(seccionIds));
     const totales = calcularTotales(plantilla, secciones);
 
+    // El "costo x m²" es propio de CADA emisión: neto con descuento ÷ m².
+    // Se filtra cualquier versión manual de la nota para no duplicarla.
+    const notas = plantilla.notas.filter((n) => !/x\s*m2|x\s*m²/i.test(n));
+    if (plantilla.superficieM2 && plantilla.superficieM2 > 0) {
+      const valorM2 = Math.round(totales.netoConDescuento / plantilla.superficieM2);
+      notas.unshift(
+        `Se trabajó con un costo de ${valorM2.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 })} x m² + IVA (${plantilla.superficieM2} m²).`,
+      );
+    }
+
     const snapshotBase: Omit<SnapshotCotizacion, 'folio' | 'fechaISO'> = {
       modeloSlug: plantilla.modeloSlug,
       kit: plantilla.kit,
@@ -71,7 +81,7 @@ export async function POST(request: Request) {
       ivaPct: plantilla.ivaPct,
       validezDias: plantilla.validezDias,
       condicionesPago: plantilla.condicionesPago,
-      notas: plantilla.notas,
+      notas,
       cliente: { nombre, email, telefono: telefono || null },
       secciones,
       seccionesTotales: plantilla.secciones.length,
