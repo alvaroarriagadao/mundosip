@@ -17,6 +17,8 @@ import type {
   SeccionCotizacion,
 } from '@/features/cotizador/cotizacion.types';
 
+import { etiquetaSx, inputNumeroSx, inputSx } from './ui';
+
 /**
  * Editor de una plantilla de cotización, todo editable en línea:
  * datos generales (título, descuento, IVA, superficie), SECCIONES
@@ -27,34 +29,7 @@ import type {
 
 type EstadoFila = 'idle' | 'guardando' | 'ok' | 'error';
 
-const inputSx = {
-  width: '100%',
-  border: '1px solid',
-  borderColor: 'divider',
-  borderRadius: `${radii.sm}px`,
-  bgcolor: 'background.paper',
-  color: 'text.primary',
-  fontFamily: 'inherit',
-  fontSize: '0.9rem',
-  px: 1.25,
-  py: 0.9,
-  outline: 'none',
-  transition: `border-color 0.2s ${motionTokens.easeCss}`,
-  '&:focus': { borderColor: colors.teal },
-} as const;
-
-const inputMonoSx = { ...inputSx, fontFamily: monoFamily, textAlign: 'right' } as const;
-
-const etiquetaSx = {
-  fontFamily: monoFamily,
-  fontWeight: 700,
-  fontSize: '0.64rem',
-  letterSpacing: '0.16em',
-  textTransform: 'uppercase',
-  color: colors.muted,
-  display: 'block',
-  mb: 0.5,
-} as const;
+const inputMonoSx = inputNumeroSx;
 
 function IconoEstado({ estado }: { estado: EstadoFila }) {
   if (estado === 'guardando') {
@@ -276,11 +251,9 @@ function NuevaPartida({ seccionId, onCreada }: { seccionId: string; onCreada: (i
           bgcolor: 'transparent',
           cursor: 'pointer',
           color: colors.teal,
-          fontFamily: monoFamily,
+          fontFamily: 'inherit',
           fontWeight: 700,
-          fontSize: '0.75rem',
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
+          fontSize: '0.88rem',
           p: 0,
           mt: 1.5,
           '&:hover': { color: colors.tanDark },
@@ -385,7 +358,7 @@ function CabeceraSeccion({
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 1.5 }}>
-      <Typography component="span" sx={{ fontFamily: monoFamily, fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.14em', color: colors.tanDark, flexShrink: 0 }}>
+      <Typography component="span" sx={{ fontWeight: 700, fontSize: '0.82rem', color: colors.tanDark, flexShrink: 0 }}>
         {seccion.codigo}
       </Typography>
 
@@ -416,11 +389,9 @@ function CabeceraSeccion({
           py: 0.7,
           bgcolor: obligatoria ? 'rgba(32, 78, 95, 0.1)' : 'transparent',
           color: obligatoria ? colors.teal : colors.muted,
-          fontFamily: monoFamily,
-          fontWeight: 700,
-          fontSize: '0.66rem',
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
+          fontFamily: 'inherit',
+          fontWeight: 600,
+          fontSize: '0.78rem',
           cursor: 'pointer',
           transition: `all 0.2s ${motionTokens.easeCss}`,
           whiteSpace: 'nowrap',
@@ -733,10 +704,8 @@ export default function EditorPlantilla({ plantilla }: { plantilla: PlantillaCot
               href={`#seccion-${seccion.codigo.replace('°', '')}`}
               sx={{
                 textDecoration: 'none',
-                fontFamily: monoFamily,
-                fontWeight: 700,
-                fontSize: '0.72rem',
-                letterSpacing: '0.06em',
+                fontWeight: 600,
+                fontSize: '0.82rem',
                 px: 1.25,
                 py: 0.6,
                 borderRadius: `${radii.pill}px`,
@@ -822,7 +791,7 @@ export default function EditorPlantilla({ plantilla }: { plantilla: PlantillaCot
             boxShadow: '0 30px 70px -30px rgba(13, 33, 41, 0.5)',
           }}
         >
-          <Typography component="p" sx={{ fontFamily: monoFamily, fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: colors.tanLight, mb: 2 }}>
+          <Typography component="p" sx={{ fontWeight: 700, fontSize: '0.92rem', color: colors.tanLight, mb: 2 }}>
             Cotización final (llave en mano completa)
           </Typography>
 
@@ -855,8 +824,8 @@ export default function EditorPlantilla({ plantilla }: { plantilla: PlantillaCot
 
           <Box sx={{ borderTop: '1px solid rgba(246, 241, 234, 0.18)', mt: 2, pt: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 2 }}>
-              <Typography sx={{ fontFamily: monoFamily, fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.16em', color: colors.tanLight }}>
-                TOTAL
+              <Typography sx={{ fontWeight: 700, fontSize: '0.92rem', color: colors.tanLight }}>
+                Total
               </Typography>
               <Typography sx={{ fontFamily: monoFamily, fontWeight: 700, fontSize: '1.45rem', letterSpacing: '-0.01em' }}>
                 {formatCLP(resumen.total)}

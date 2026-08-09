@@ -21,11 +21,8 @@ export interface PlantillaResumenUI {
 }
 
 const kickerSx = {
-  fontFamily: monoFamily,
   fontWeight: 700,
-  fontSize: '0.66rem',
-  letterSpacing: '0.16em',
-  textTransform: 'uppercase',
+  fontSize: '0.8rem',
 } as const;
 
 /** Duplica la plantilla hacia un modelo nuevo pidiendo solo el slug. */

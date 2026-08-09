@@ -64,11 +64,13 @@ export default function ContactForm() {
   const [errorServidor, setErrorServidor] = useState<string>('');
   const searchParams = useSearchParams();
 
-  // Si llegan desde "Cotizar este panel" o un modelo, preseleccionamos el interés
-  const interesInicial: ContactoInput['interes'] = searchParams.get('panel')
-    ? 'paneles'
-    : searchParams.get('modelo')
-      ? 'modelo'
+  // Preselección del interés: ?interes=<valor> directo, o los atajos
+  // históricos ?panel= / ?modelo= que usan los CTA del sitio
+  const interesParam = searchParams.get('interes');
+  const interesInicial: ContactoInput['interes'] = INTERESES.some((i) => i.valor === interesParam)
+    ? (interesParam as ContactoInput['interes'])
+    : searchParams.get('panel')
+      ? 'paneles'
       : 'modelo';
 
   const {

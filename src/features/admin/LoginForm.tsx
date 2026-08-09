@@ -48,7 +48,7 @@ export default function LoginForm() {
         setEnviando(false);
         return;
       }
-      router.replace('/admin/cotizaciones');
+      router.replace('/admin');
       router.refresh();
     } catch {
       setError('No pudimos iniciar sesión. Revisa tu conexión.');

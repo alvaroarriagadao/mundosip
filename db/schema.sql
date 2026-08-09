@@ -329,3 +329,25 @@ create index if not exists idx_cotizaciones_emitidas_modelo
 -- ------------------------------------------------------------
 alter table cotizacion_plantillas add column if not exists superficie_m2 integer
   check (superficie_m2 is null or superficie_m2 > 0);
+
+-- ------------------------------------------------------------
+--  MIGRACIÓN 006 — Pedidos de paneles (tienda /paneles)
+--
+--  Cada "cotización de paneles" que arma un cliente en la tienda
+--  queda aquí con folio propio (PAN-#####) y snapshot de los
+--  productos y precios al momento de emitirse. Los productos
+--  viven en la tabla `paneles` (existente) y los administra el
+--  equipo desde /admin/paneles.
+-- ------------------------------------------------------------
+create table if not exists pedidos_paneles (
+  id          uuid primary key default gen_random_uuid(),
+  folio_num   bigint generated always as identity,   -- correlativo → "PAN-00001"
+  nombre      text not null,
+  email       text not null,
+  telefono    text,
+  snapshot    jsonb not null,   -- items con nombre/precio/cantidad tal como se emitió
+  total_clp   integer not null,
+  created_at  timestamptz not null default now()
+);
+create index if not exists idx_pedidos_paneles_created
+  on pedidos_paneles (created_at desc);

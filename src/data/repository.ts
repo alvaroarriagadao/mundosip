@@ -1,11 +1,9 @@
 import type { Faq } from '@/features/faqs/faq.types';
 import type { Modelo } from '@/features/modelos/modelo.types';
-import type { PanelSIP } from '@/features/paneles/panel.types';
 import type { Proyecto, RegionProyecto } from '@/features/proyectos/proyecto.types';
 
 import { faqs } from './faqs';
 import { modelos } from './modelos';
-import { paneles } from './paneles';
 import { proyectos } from './proyectos';
 
 /**
@@ -28,13 +26,8 @@ export async function getModeloBySlug(slug: string): Promise<Modelo | undefined>
   return modelos.find((m) => m.slug === slug);
 }
 
-export async function getPaneles(): Promise<PanelSIP[]> {
-  return [...paneles].sort((a, b) => a.orden - b.orden);
-}
-
-export async function getPanelBySlug(slug: string): Promise<PanelSIP | undefined> {
-  return paneles.find((p) => p.slug === slug);
-}
+// Los paneles ya migraron a la DB (fase CMS propia): ver
+// features/paneles/paneles.db.ts — se administran en /admin/paneles.
 
 export async function getProyectos(): Promise<Proyecto[]> {
   return [...proyectos].sort((a, b) => a.orden - b.orden);

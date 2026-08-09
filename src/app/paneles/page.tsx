@@ -8,93 +8,97 @@ import Container from '@/components/ui/Container';
 import Eyebrow from '@/components/ui/Eyebrow';
 import Reveal from '@/components/ui/Reveal';
 import Section from '@/components/ui/Section';
-import PanelCard from '@/features/paneles/PanelCard';
-import { formatCLP } from '@/lib/format';
-import { getPaneles } from '@/data/repository';
+import PanelesShop from '@/features/paneles/PanelesShop';
+import { getPanelesPublicados } from '@/features/paneles/paneles.db';
 import { colors, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
 
 export const metadata: Metadata = {
   title: 'Paneles SIP',
   description:
-    'Venta de paneles SIP por unidad: 94, 119 y 122,2 mm. Ficha técnica, precios y despacho a todo Chile.',
+    'Venta de paneles SIP por unidad: elige espesores, arma tu pedido y descarga tu cotización en PDF al instante. Despacho a todo Chile.',
 };
+
+// El catálogo vive en la DB y lo edita el equipo en /admin/paneles
+export const dynamic = 'force-dynamic';
 
 const PASOS = [
   {
     icono: <Ruler size={22} strokeWidth={2} />,
-    titulo: 'Dinos cuántos necesitas',
-    texto: 'Con tu metraje o tus planos calculamos la cantidad exacta de paneles y evitamos que sobre material.',
+    titulo: 'Arma tu pedido',
+    texto: 'Agrega los paneles y cantidades que necesitas; el total se calcula al instante y descargas tu cotización en PDF.',
   },
   {
     icono: <PackageCheck size={22} strokeWidth={2} />,
-    titulo: 'Los preparamos dimensionados',
-    texto: 'Si lo prefieres, cortamos y rotulamos cada panel según tu proyecto para que lleguen listos a la obra.',
+    titulo: 'Confirmamos contigo',
+    texto: 'Te contactamos para confirmar stock y, si lo prefieres, dimensionar los paneles según tu proyecto.',
   },
   {
     icono: <Truck size={22} strokeWidth={2} />,
-    titulo: 'Despachamos a todo Chile',
+    titulo: 'Despacho a todo Chile',
     texto: 'Coordinamos el flete según destino y volumen. También puedes retirarlos en fábrica, en Purranque.',
   },
 ];
 
+/**
+ * Tienda de paneles por unidad. Hero compacto a propósito: los
+ * productos deben verse sin scrollear (feedback del usuario).
+ */
 export default async function PanelesPage() {
-  const paneles = await getPaneles();
-  const desde = Math.min(...paneles.map((p) => p.precioCLP));
+  const paneles = await getPanelesPublicados().catch((error) => {
+    console.error('[paneles] no se pudo cargar el catálogo', error);
+    return [];
+  });
 
   return (
     <>
       <Section tone="paper" belowHeader sx={{ pb: { xs: 6, md: 8 } }}>
         <Container>
+          {/* Cabecera en una franja: título contenido + bajada al lado */}
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '7fr 5fr' },
-              gap: { xs: 3, md: 10 },
-              alignItems: 'start',
-              mb: { xs: 5, md: 8 },
+              gridTemplateColumns: { xs: '1fr', md: '5fr 7fr' },
+              gap: { xs: 2, md: 8 },
+              alignItems: 'end',
+              mb: { xs: 3, md: 4 },
             }}
           >
             <Box>
               <Eyebrow>Paneles SIP</Eyebrow>
-              <Typography variant="h1" component="h1" sx={{ mt: 2, maxWidth: '15ch' }}>
+              <Typography
+                variant="h1"
+                component="h1"
+                sx={{ mt: 1.5, fontSize: 'clamp(2rem, 3.6vw, 2.9rem)' }}
+              >
                 El material, por unidad.
               </Typography>
             </Box>
-            <Box sx={{ alignSelf: 'end' }}>
-              <Typography variant="subtitle1" sx={{ color: 'text.secondary', maxWidth: 460, mb: 2.5 }}>
-                ¿Ya tienes tu proyecto y solo necesitas los paneles? Los vendemos sueltos, con la
-                misma calidad con la que fabricamos nuestros kits.
-              </Typography>
-              <Typography
-                component="p"
-                sx={{ fontFamily: monoFamily, fontSize: '0.82rem', letterSpacing: '0.12em', color: colors.tanDark }}
-              >
-                DESDE {formatCLP(desde)} POR PANEL
-              </Typography>
-            </Box>
+            <Typography variant="subtitle1" sx={{ color: 'text.secondary', maxWidth: 560, fontSize: '1.02rem' }}>
+              La misma calidad con la que fabricamos nuestros kits. Agrega lo que necesitas y
+              descarga tu cotización al instante.
+            </Typography>
           </Box>
 
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' },
-              gap: { xs: 3, md: 4 },
-            }}
-          >
-            {paneles.map((panel, i) => (
-              <Reveal key={panel.slug} delay={i * 0.1}>
-                <PanelCard panel={panel} />
-              </Reveal>
-            ))}
-          </Box>
+          {paneles.length > 0 ? (
+            <PanelesShop paneles={paneles} />
+          ) : (
+            <Box sx={{ py: { xs: 4, md: 6 }, maxWidth: 560 }}>
+              <Typography variant="h3" component="p" sx={{ mb: 2 }}>
+                El catálogo está tomando un descanso.
+              </Typography>
+              <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+                Escríbenos y te cotizamos los paneles que necesitas de inmediato.
+              </Typography>
+              <Button variant="contained" color="secondary" arrow href="/contacto">
+                Cotizar por contacto
+              </Button>
+            </Box>
+          )}
 
           <Reveal y={16} delay={0.15}>
-            <Typography
-              sx={{ mt: { xs: 3, md: 4 }, fontSize: '0.95rem', color: 'text.secondary', maxWidth: 760 }}
-            >
-              ¿Necesitas otro espesor? Fabricamos también paneles de 169 mm para cubiertas y pisos, y
-              medidas especiales a pedido.{' '}
+            <Typography sx={{ mt: { xs: 3, md: 4 }, fontSize: '0.95rem', color: 'text.secondary', maxWidth: 760 }}>
+              ¿Necesitas un espesor especial o paneles dimensionados según tus planos?{' '}
               <Box component="span" sx={{ color: 'text.primary', fontWeight: 700 }}>
                 Escríbenos y lo cotizamos.
               </Box>
@@ -103,101 +107,8 @@ export default async function PanelesPage() {
         </Container>
       </Section>
 
-      {/* Comparador de specs */}
-      <Section tone="cream" sx={{ py: { xs: 8, md: 11 } }}>
-        <Container>
-          <Reveal>
-            <Eyebrow>Comparar</Eyebrow>
-            <Typography variant="h2" sx={{ mt: 2, mb: { xs: 3, md: 5 }, maxWidth: '16ch' }}>
-              Cuál te conviene.
-            </Typography>
-          </Reveal>
-
-          <Reveal y={20}>
-            <Box sx={{ overflowX: 'auto', borderRadius: `${radii.lg}px`, border: '1px solid', borderColor: 'divider' }}>
-              <Box component="table" sx={{ width: '100%', minWidth: 640, borderCollapse: 'collapse', bgcolor: 'background.paper' }}>
-                <Box component="thead">
-                  <Box component="tr">
-                    {['', ...paneles.map((p) => p.nombre)].map((h, i) => (
-                      <Box
-                        key={h || 'x'}
-                        component="th"
-                        sx={{
-                          textAlign: i === 0 ? 'left' : 'center',
-                          p: 2.25,
-                          borderBottom: '1px solid',
-                          borderColor: 'divider',
-                          bgcolor: i === 1 ? 'rgba(185, 138, 78, 0.08)' : 'transparent',
-                          fontFamily: monoFamily,
-                          fontWeight: 700,
-                          fontSize: '0.8rem',
-                          letterSpacing: '0.08em',
-                        }}
-                      >
-                        {h}
-                      </Box>
-                    ))}
-                  </Box>
-                </Box>
-                <Box component="tbody">
-                  {[
-                    { label: 'Espesor total', get: (p: (typeof paneles)[number]) => `${String(p.espesorTotalMM).replace('.', ',')} mm` },
-                    { label: 'Espesor OSB', get: (p: (typeof paneles)[number]) => `${String(p.espesorOSBMM).replace('.', ',')} mm` },
-                    { label: 'Núcleo EPS', get: (p: (typeof paneles)[number]) => `${p.espesorEPSMM} mm` },
-                    { label: 'Densidad EPS', get: (p: (typeof paneles)[number]) => p.densidadEPS },
-                    { label: 'Apto para madera', get: (p: (typeof paneles)[number]) => p.aptoParaMadera },
-                    { label: 'Uso principal', get: (p: (typeof paneles)[number]) => p.usos[0] },
-                    { label: 'Precio por panel', get: (p: (typeof paneles)[number]) => formatCLP(p.precioCLP) },
-                  ].map((fila) => (
-                    <Box component="tr" key={fila.label}>
-                      <Box
-                        component="th"
-                        scope="row"
-                        sx={{
-                          textAlign: 'left',
-                          p: 2.25,
-                          borderBottom: '1px solid',
-                          borderColor: 'divider',
-                          fontFamily: monoFamily,
-                          fontWeight: 400,
-                          fontSize: '0.78rem',
-                          letterSpacing: '0.08em',
-                          textTransform: 'uppercase',
-                          color: 'text.secondary',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {fila.label}
-                      </Box>
-                      {paneles.map((p, i) => (
-                        <Box
-                          key={p.slug}
-                          component="td"
-                          sx={{
-                            textAlign: 'center',
-                            p: 2.25,
-                            borderBottom: '1px solid',
-                            borderColor: 'divider',
-                            bgcolor: i === 0 ? 'rgba(185, 138, 78, 0.05)' : 'transparent',
-                            fontSize: '0.98rem',
-                            fontWeight: fila.label === 'Precio por panel' ? 700 : 400,
-                            color: fila.label === 'Precio por panel' ? colors.tanDark : 'text.primary',
-                          }}
-                        >
-                          {fila.get(p)}
-                        </Box>
-                      ))}
-                    </Box>
-                  ))}
-                </Box>
-              </Box>
-            </Box>
-          </Reveal>
-        </Container>
-      </Section>
-
       {/* Cómo comprar */}
-      <Section tone="paper" sx={{ py: { xs: 8, md: 11 } }}>
+      <Section tone="cream" sx={{ py: { xs: 8, md: 11 } }}>
         <Container>
           <Reveal>
             <Eyebrow>Cómo comprar</Eyebrow>
@@ -220,7 +131,7 @@ export default async function PanelesPage() {
                     height: '100%',
                     p: { xs: 3, md: 3.5 },
                     borderRadius: `${radii.lg}px`,
-                    bgcolor: 'background.default',
+                    bgcolor: 'background.paper',
                     border: '1px solid',
                     borderColor: 'divider',
                   }}
@@ -267,14 +178,14 @@ export default async function PanelesPage() {
               component="p"
               sx={{ fontFamily: monoFamily, fontWeight: 700, fontSize: '0.8rem', letterSpacing: '0.24em', color: colors.tanLight, mb: 1.5 }}
             >
-              COTIZACIÓN SIN COMPROMISO
+              ¿UN PROYECTO COMPLETO?
             </Typography>
             <Typography variant="h2" sx={{ mb: 4, mx: 'auto', maxWidth: '20ch' }}>
-              Dinos cuántos metros necesitas cubrir.
+              También panelizamos tus planos.
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Button variant="contained" color="secondary" size="large" arrow href="/contacto">
-                Cotizar paneles
+              <Button variant="contained" color="secondary" size="large" arrow href="/contacto?interes=panelizado">
+                Panelizar mis planos
               </Button>
               <Button
                 variant="outlined"

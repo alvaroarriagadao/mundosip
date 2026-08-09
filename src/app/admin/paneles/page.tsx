@@ -7,17 +7,16 @@ import Container from '@/components/ui/Container';
 import Eyebrow from '@/components/ui/Eyebrow';
 import Section from '@/components/ui/Section';
 import BotonSalir from '@/features/admin/BotonSalir';
-import ListadoPlantillas from '@/features/admin/ListadoPlantillas';
+import GestorPaneles from '@/features/admin/GestorPaneles';
 import { exigirAdmin } from '@/features/admin/auth';
-import { KIT_LABEL } from '@/features/cotizador/cotizacion.types';
-import { getEmitidas, getPlantillasResumen } from '@/features/cotizador/cotizador.db';
-import { formatearFolio } from '@/features/cotizador/folio';
+import { getPanelesAdmin, getPedidosPaneles } from '@/features/paneles/paneles.db';
+import { formatearFolioPedido } from '@/features/paneles/pedido.schema';
 import { formatCLP } from '@/lib/format';
 import { colors, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
 
 export const metadata: Metadata = {
-  title: 'Cotizaciones · Panel MundoSIP',
+  title: 'Paneles · Panel MundoSIP',
   robots: { index: false, follow: false },
 };
 
@@ -43,10 +42,10 @@ const cabeceraSx = {
   borderBottomColor: colors.ink,
 } as const;
 
-/** Panel del equipo: plantillas editables + cotizaciones emitidas. */
-export default async function AdminCotizacionesPage() {
+/** Gestión de la tienda de paneles: productos + pedidos cotizados. */
+export default async function AdminPanelesPage() {
   await exigirAdmin();
-  const [plantillas, emitidas] = await Promise.all([getPlantillasResumen(), getEmitidas()]);
+  const [paneles, pedidos] = await Promise.all([getPanelesAdmin(), getPedidosPaneles()]);
 
   return (
     <Section tone="paper" belowHeader>
@@ -71,65 +70,60 @@ export default async function AdminCotizacionesPage() {
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2, mb: { xs: 4, md: 5 } }}>
           <Box>
-            <Eyebrow>Panel · Cotizaciones</Eyebrow>
+            <Eyebrow>Panel · Tienda de paneles</Eyebrow>
             <Typography variant="h1" component="h1" sx={{ mt: 2 }}>
-              Plantillas y emisiones.
+              Productos.
             </Typography>
           </Box>
           <BotonSalir />
         </Box>
 
-        {/* ── Plantillas agrupadas por modelo, con buscador y duplicado ── */}
         <Box sx={{ mb: { xs: 6, md: 8 } }}>
-          <ListadoPlantillas plantillas={plantillas} />
+          <GestorPaneles paneles={paneles} />
         </Box>
 
-        {/* ── Cotizaciones emitidas ── */}
+        {/* ── Pedidos cotizados desde la tienda ── */}
         <Typography variant="h3" component="h2" sx={{ mb: 2.5 }}>
-          Cotizaciones emitidas
+          Pedidos cotizados
         </Typography>
-        {emitidas.length === 0 ? (
+        {pedidos.length === 0 ? (
           <Typography sx={{ color: 'text.secondary' }}>
-            Aún no hay cotizaciones emitidas desde el sitio.
+            Aún no hay cotizaciones de paneles desde el sitio.
           </Typography>
         ) : (
           <Box sx={{ overflowX: 'auto', border: '1px solid', borderColor: 'divider', borderRadius: `${radii.md}px` }}>
-            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', minWidth: 720 }}>
+            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
               <Box component="thead">
                 <Box component="tr">
                   <Box component="th" sx={cabeceraSx}>Folio</Box>
                   <Box component="th" sx={cabeceraSx}>Fecha</Box>
                   <Box component="th" sx={cabeceraSx}>Cliente</Box>
-                  <Box component="th" sx={cabeceraSx}>Modelo</Box>
                   <Box component="th" sx={{ ...cabeceraSx, textAlign: 'right' }}>Total</Box>
                   <Box component="th" sx={cabeceraSx}>PDF</Box>
                 </Box>
               </Box>
               <Box component="tbody">
-                {emitidas.map((e) => (
-                  <Box component="tr" key={e.id} sx={{ '&:last-of-type td': { borderBottom: 0 } }}>
+                {pedidos.map((p) => (
+                  <Box component="tr" key={p.id} sx={{ '&:last-of-type td': { borderBottom: 0 } }}>
                     <Box component="td" sx={{ ...celdaSx, fontFamily: monoFamily, fontWeight: 700 }}>
-                      {formatearFolio(e.folioNum)}
+                      {formatearFolioPedido(p.folioNum)}
                     </Box>
-                    <Box component="td" sx={celdaSx}>{fechaFmt.format(new Date(e.createdAt))}</Box>
+                    <Box component="td" sx={celdaSx}>{fechaFmt.format(new Date(p.createdAt))}</Box>
                     <Box component="td" sx={celdaSx}>
-                      {e.nombre}
+                      {p.nombre}
                       <Typography component="span" sx={{ display: 'block', fontSize: '0.8rem', color: 'text.secondary' }}>
-                        {e.email}
-                        {e.telefono ? ` · ${e.telefono}` : ''}
+                        {p.email}
+                        {p.telefono ? ` · ${p.telefono}` : ''}
                       </Typography>
                     </Box>
-                    <Box component="td" sx={{ ...celdaSx, textTransform: 'capitalize' }}>
-                      {e.modeloSlug} · {KIT_LABEL[e.kit]}
-                    </Box>
                     <Box component="td" sx={{ ...celdaSx, textAlign: 'right', fontFamily: monoFamily, fontWeight: 700 }}>
-                      {formatCLP(e.totalClp)}
+                      {formatCLP(p.totalClp)}
                     </Box>
                     <Box component="td" sx={celdaSx}>
                       <Box
                         component="a"
-                        href={`/api/admin/emitidas/${e.id}/pdf`}
-                        aria-label={`Descargar PDF de ${formatearFolio(e.folioNum)}`}
+                        href={`/api/admin/pedidos-paneles/${p.id}/pdf`}
+                        aria-label={`Descargar PDF de ${formatearFolioPedido(p.folioNum)}`}
                         sx={{ color: colors.teal, display: 'inline-flex', '&:hover': { color: colors.tanDark } }}
                       >
                         <FileDown size={18} />

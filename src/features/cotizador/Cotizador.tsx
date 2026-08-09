@@ -3,13 +3,14 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AnimatePresence, animate, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Check, ChevronDown, FileDown, Loader2, Lock, TriangleAlert } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import Button from '@/components/ui/Button';
+import CifraAnimada from '@/components/ui/CifraAnimada';
 import Reveal from '@/components/ui/Reveal';
 import { formatCLP, formatNumber } from '@/lib/format';
 import { EASE } from '@/lib/motion';
@@ -95,30 +96,6 @@ const campoSx = {
   '&:hover': { borderColor: 'rgba(246, 241, 234, 0.3)' },
   '&:focus': { borderColor: colors.tan, bgcolor: 'rgba(246, 241, 234, 0.09)' },
 } as const;
-
-/** Total grande que interpola suave al cambiar la selección */
-function TotalAnimado({ valor }: { valor: number }) {
-  const nodoRef = useRef<HTMLSpanElement>(null);
-  const previoRef = useRef(valor);
-
-  // Anima el textContent directo (sin pasar por React): confiable y barato
-  useEffect(() => {
-    const desde = previoRef.current;
-    previoRef.current = valor;
-    const nodo = nodoRef.current;
-    if (!nodo || desde === valor) return;
-    const control = animate(desde, valor, {
-      duration: 0.55,
-      ease: EASE,
-      onUpdate: (v) => {
-        nodo.textContent = formatCLP(Math.round(v));
-      },
-    });
-    return () => control.stop();
-  }, [valor]);
-
-  return <span ref={nodoRef}>{formatCLP(valor)}</span>;
-}
 
 /**
  * Checkbox cuadrado real (input nativo estilizado con appearance:none).
@@ -748,7 +725,7 @@ export default function Cotizador({
                         letterSpacing: '-0.01em',
                       }}
                     >
-                      <TotalAnimado valor={totales.total} />
+                      <CifraAnimada valor={totales.total} />
                     </Typography>
                   </Box>
                 </>

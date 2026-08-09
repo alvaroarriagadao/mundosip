@@ -39,6 +39,34 @@ export const seccionUpdateSchema = z.object({
   obligatoria: z.boolean(),
 });
 
+/** Campo de texto opcional del formulario de panel: '' → null */
+const textoOpcional = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((v) => v || null)
+    .nullable();
+
+export const panelSchema = z.object({
+  nombre: z.string().trim().min(3, 'Nombre muy corto').max(80),
+  precioClp: z.number().int('Pesos enteros').positive('Debe ser mayor a 0').max(100_000_000),
+  dimensiones: textoOpcional(60),
+  espesorOsb: textoOpcional(30),
+  espesorEps: textoOpcional(30),
+  densidadEps: textoOpcional(30),
+  aptoParaMadera: textoOpcional(60),
+  descripcion: textoOpcional(400),
+  /** Ruta local (/images/…) o URL https; vacío = imagen estándar del panel */
+  imagenUrl: textoOpcional(300).refine(
+    (v) => v == null || v.startsWith('/') || v.startsWith('https://'),
+    'La imagen debe ser una ruta /images/… o una URL https',
+  ),
+  publicado: z.boolean(),
+});
+
+export type PanelInput = z.infer<typeof panelSchema>;
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ItemUpdateInput = z.infer<typeof itemUpdateSchema>;
 export type ItemCreateInput = z.infer<typeof itemCreateSchema>;
