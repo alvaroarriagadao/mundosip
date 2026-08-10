@@ -95,8 +95,10 @@ function FormPanel({
 
   return (
     <Box sx={{ p: { xs: 2, md: 2.5 }, bgcolor: 'rgba(32, 78, 95, 0.04)', borderTop: '1px solid', borderColor: 'divider' }}>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: '2fr 1fr 1fr' }, gap: 2, mb: 2 }}>
-        <Box sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}>
+      {/* En móvil cada campo a ancho completo: "1220 x 2440 x 94 mm" no
+          entra legible en media columna de 375 px */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 2, mb: 2 }}>
+        <Box>
           <Typography component="label" sx={etiquetaSx}>
             Nombre del producto *
           </Typography>
@@ -238,8 +240,25 @@ function FilaProducto({
 
   return (
     <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: `${radii.md}px`, bgcolor: 'background.paper', overflow: 'hidden' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, md: 2 }, p: { xs: 1.5, md: 2 } }}>
-        <Box sx={{ width: 52, height: 52, borderRadius: `${radii.sm}px`, bgcolor: '#FBF9F5', border: '1px solid', borderColor: 'divider', overflow: 'hidden', flexShrink: 0 }}>
+      {/*
+        Grid con áreas: en móvil la ficha va arriba y precio/estado/acciones
+        bajan a una segunda línea. En una sola fila el nombre quedaba
+        aplastado a 0 px por los elementos de ancho fijo.
+      */}
+      <Box
+        sx={{
+          display: 'grid',
+          alignItems: 'center',
+          gap: { xs: 1.25, md: 2 },
+          p: { xs: 1.75, md: 2 },
+          gridTemplateColumns: { xs: 'auto minmax(0, 1fr) auto', md: 'auto minmax(0, 1fr) auto auto auto' },
+          gridTemplateAreas: {
+            xs: `"foto datos datos" "precio estado acciones"`,
+            md: `"foto datos precio estado acciones"`,
+          },
+        }}
+      >
+        <Box sx={{ gridArea: 'foto', width: 52, height: 52, borderRadius: `${radii.sm}px`, bgcolor: '#FBF9F5', border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
           <Box
             component="img"
             src={panel.imagenUrl || IMAGEN_DEFECTO}
@@ -248,8 +267,8 @@ function FilaProducto({
           />
         </Box>
 
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontWeight: 700, fontSize: '0.98rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <Box sx={{ gridArea: 'datos', minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.98rem', lineHeight: 1.3 }}>
             {panel.nombre}
           </Typography>
           <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>
@@ -257,19 +276,21 @@ function FilaProducto({
           </Typography>
         </Box>
 
-        <Typography sx={{ fontFamily: monoFamily, fontWeight: 700, fontSize: '0.98rem', whiteSpace: 'nowrap' }}>
+        <Typography sx={{ gridArea: 'precio', fontFamily: monoFamily, fontWeight: 700, fontSize: '0.98rem', whiteSpace: 'nowrap' }}>
           {formatCLP(panel.precioClp)}
         </Typography>
 
         {/* Interruptor real: se prende y se apaga sin abrir el formulario */}
-        <Toggle
-          activo={panel.publicado}
-          onCambiar={alternarPublicado}
-          etiqueta={panel.publicado ? 'Visible' : 'Oculto'}
-          ariaLabel={`${panel.publicado ? 'Ocultar' : 'Publicar'} ${panel.nombre} en la tienda`}
-        />
+        <Box sx={{ gridArea: 'estado', justifySelf: { xs: 'center', md: 'start' } }}>
+          <Toggle
+            activo={panel.publicado}
+            onCambiar={alternarPublicado}
+            etiqueta={panel.publicado ? 'Visible' : 'Oculto'}
+            ariaLabel={`${panel.publicado ? 'Ocultar' : 'Publicar'} ${panel.nombre} en la tienda`}
+          />
+        </Box>
 
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
+        <Box sx={{ gridArea: 'acciones', display: 'flex', gap: 0.5, justifySelf: 'end' }}>
           <Box
             component="button"
             type="button"

@@ -4,10 +4,24 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* En táctiles el scrollbar es flotante y no ocupa ancho: reservarlo deja
+   el área de contenido más angosta que el viewport, y los elementos
+   `position: fixed` (el header) se salían de ese margen provocando
+   scroll horizontal en móvil. */
+@media (hover: none), (pointer: coarse) {
+  html {
+    scrollbar-gutter: auto;
+  }
+}
+
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Las animaciones de entrada laterales (Reveal con x) empujan el ancho
+     y en móvil aparecía scroll horizontal. `clip` y no `hidden`: hidden
+     rompería los `position: sticky` (carrito, resumen de cotización). */
+  overflow-x: clip;
 }
 
 ::selection {

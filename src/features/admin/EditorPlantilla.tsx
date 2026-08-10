@@ -31,6 +31,19 @@ type EstadoFila = 'idle' | 'guardando' | 'ok' | 'error';
 
 const inputMonoSx = inputNumeroSx;
 
+/**
+ * Rótulo de campo visible SOLO en móvil: ahí la fila se apila y la
+ * cabecera de columnas desaparece, así que sin esto los campos quedan
+ * sin contexto ("gl", "1", "1950000" sueltos).
+ */
+const rotuloMovilSx = {
+  display: { xs: 'block', md: 'none' },
+  fontSize: '0.72rem',
+  fontWeight: 600,
+  color: 'text.secondary',
+  mb: 0.25,
+} as const;
+
 function IconoEstado({ estado }: { estado: EstadoFila }) {
   if (estado === 'guardando') {
     return (
@@ -125,11 +138,34 @@ function FilaItem({
         '&:last-of-type': { borderBottom: 0 },
       }}
     >
-      <Box component="input" aria-label="Descripción" value={descripcion} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDescripcion(e.target.value)} sx={inputSx} />
-      <Box component="input" aria-label="Unidad" value={unidad} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUnidad(e.target.value)} sx={{ ...inputSx, textAlign: 'center' }} />
-      <Box component="input" aria-label="Cantidad" inputMode="decimal" value={cantidad} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCantidad(e.target.value)} sx={inputMonoSx} />
-      <Box component="input" aria-label="Precio unitario" inputMode="numeric" value={precio} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPrecio(e.target.value)} sx={inputMonoSx} />
+      <Box>
+        <Typography component="span" sx={rotuloMovilSx}>
+          Descripción
+        </Typography>
+        <Box component="input" aria-label="Descripción" value={descripcion} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDescripcion(e.target.value)} sx={inputSx} />
+      </Box>
+      <Box>
+        <Typography component="span" sx={rotuloMovilSx}>
+          Unidad
+        </Typography>
+        <Box component="input" aria-label="Unidad" value={unidad} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUnidad(e.target.value)} sx={{ ...inputSx, textAlign: { xs: 'left', md: 'center' } }} />
+      </Box>
+      <Box>
+        <Typography component="span" sx={rotuloMovilSx}>
+          Cantidad
+        </Typography>
+        <Box component="input" aria-label="Cantidad" inputMode="decimal" value={cantidad} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCantidad(e.target.value)} sx={inputMonoSx} />
+      </Box>
+      <Box>
+        <Typography component="span" sx={rotuloMovilSx}>
+          Precio unitario
+        </Typography>
+        <Box component="input" aria-label="Precio unitario" inputMode="numeric" value={precio} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPrecio(e.target.value)} sx={inputMonoSx} />
+      </Box>
       <Typography sx={{ fontFamily: monoFamily, fontWeight: 700, fontSize: '0.88rem', textAlign: 'right', whiteSpace: 'nowrap' }}>
+        <Box component="span" sx={{ ...rotuloMovilSx, display: { xs: 'inline', md: 'none' }, mr: 0.75 }}>
+          Total:
+        </Box>
         {valido ? formatCLP(Math.round(cantidadNum * precioNum)) : '—'}
       </Typography>
       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
