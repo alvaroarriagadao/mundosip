@@ -351,3 +351,21 @@ create table if not exists pedidos_paneles (
 );
 create index if not exists idx_pedidos_paneles_created
   on pedidos_paneles (created_at desc);
+
+-- ------------------------------------------------------------
+--  MIGRACIÓN 007 — Imágenes subidas desde el admin
+--
+--  El equipo sube fotos desde su computador (no pega URLs). El
+--  archivo se guarda aquí en base64 y se sirve por
+--  /api/imagenes/<id> con cache inmutable, así el HTML del sitio
+--  no carga con el peso de la foto. Base64 y no bytea para no
+--  depender de cómo cada driver serializa binarios.
+-- ------------------------------------------------------------
+create table if not exists imagenes (
+  id          uuid primary key default gen_random_uuid(),
+  mime        text not null check (mime in ('image/webp','image/jpeg','image/png')),
+  datos       text not null,          -- contenido del archivo en base64
+  nombre      text,                   -- nombre original, como referencia
+  bytes       integer not null check (bytes > 0),
+  created_at  timestamptz not null default now()
+);

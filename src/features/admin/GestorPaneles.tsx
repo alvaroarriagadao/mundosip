@@ -3,18 +3,19 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
-import Image from 'next/image';
+import { Check, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 
 import Button from '@/components/ui/Button';
+import Toggle from '@/components/ui/Toggle';
 import { formatCLP } from '@/lib/format';
 import { EASE } from '@/lib/motion';
 import type { PanelProducto } from '@/features/paneles/panel.types';
 import { colors, motionTokens, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
 
-import { chipSx, etiquetaSx, inputNumeroSx, inputSx } from './ui';
+import SelectorImagen from './SelectorImagen';
+import { etiquetaSx, inputNumeroSx, inputSx } from './ui';
 
 /**
  * Gestor de productos de la tienda /paneles — pensado para alguien NO
@@ -149,36 +150,23 @@ function FormPanel({
         <Box component="textarea" rows={2} placeholder="Placas OSB con núcleo de poliestireno expandido…" sx={{ ...inputSx, resize: 'vertical' }} {...campo('descripcion')} />
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', flexWrap: 'wrap', mb: 2.5 }}>
-        <Box sx={{ flex: 1, minWidth: 260 }}>
-          <Typography component="label" sx={etiquetaSx}>
-            Imagen (déjalo vacío para usar la foto estándar del panel)
-          </Typography>
-          <Box component="input" placeholder="https://… o /images/…" sx={inputSx} {...campo('imagenUrl')} />
-        </Box>
-        <Box sx={{ position: 'relative', width: 64, height: 64, borderRadius: `${radii.sm}px`, border: '1px solid', borderColor: 'divider', bgcolor: '#FBF9F5', overflow: 'hidden', flexShrink: 0 }}>
-          <Image
-            src={campos.imagenUrl.trim() || IMAGEN_DEFECTO}
-            alt="Vista previa"
-            fill
-            sizes="64px"
-            style={{ objectFit: 'contain', padding: '4px' }}
-            unoptimized
-          />
-        </Box>
-        <Box
-          component="label"
-          sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, cursor: 'pointer', pb: 1 }}
-        >
-          <Box
-            component="input"
-            type="checkbox"
-            checked={campos.publicado}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCampos((prev) => ({ ...prev, publicado: e.target.checked }))}
-            sx={{ width: 18, height: 18, accentColor: colors.teal, cursor: 'pointer' }}
-          />
-          <Typography sx={{ fontSize: '0.9rem' }}>Visible en la tienda</Typography>
-        </Box>
+      <Box sx={{ mb: 2 }}>
+        <Typography component="label" sx={etiquetaSx}>
+          Foto del producto
+        </Typography>
+        <SelectorImagen
+          valor={campos.imagenUrl}
+          fallback={IMAGEN_DEFECTO}
+          onCambiar={(url) => setCampos((prev) => ({ ...prev, imagenUrl: url }))}
+        />
+      </Box>
+
+      <Box sx={{ mb: 2.5 }}>
+        <Toggle
+          activo={campos.publicado}
+          onCambiar={(v) => setCampos((prev) => ({ ...prev, publicado: v }))}
+          etiqueta={campos.publicado ? 'Visible en la tienda' : 'Oculto en la tienda'}
+        />
       </Box>
 
       <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -251,14 +239,12 @@ function FilaProducto({
   return (
     <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: `${radii.md}px`, bgcolor: 'background.paper', overflow: 'hidden' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, md: 2 }, p: { xs: 1.5, md: 2 } }}>
-        <Box sx={{ position: 'relative', width: 52, height: 52, borderRadius: `${radii.sm}px`, bgcolor: '#FBF9F5', border: '1px solid', borderColor: 'divider', overflow: 'hidden', flexShrink: 0 }}>
-          <Image
+        <Box sx={{ width: 52, height: 52, borderRadius: `${radii.sm}px`, bgcolor: '#FBF9F5', border: '1px solid', borderColor: 'divider', overflow: 'hidden', flexShrink: 0 }}>
+          <Box
+            component="img"
             src={panel.imagenUrl || IMAGEN_DEFECTO}
             alt=""
-            fill
-            sizes="52px"
-            style={{ objectFit: 'contain', padding: '4px' }}
-            unoptimized
+            sx={{ width: '100%', height: '100%', objectFit: 'contain', p: 0.5 }}
           />
         </Box>
 
@@ -275,24 +261,13 @@ function FilaProducto({
           {formatCLP(panel.precioClp)}
         </Typography>
 
-        <Box
-          component="button"
-          type="button"
-          onClick={alternarPublicado}
-          title={panel.publicado ? 'Visible en la tienda — clic para ocultar' : 'Oculto — clic para publicar'}
-          sx={{
-            ...chipSx,
-            border: '1px solid',
-            borderColor: panel.publicado ? 'rgba(32, 78, 95, 0.35)' : 'divider',
-            bgcolor: panel.publicado ? 'rgba(32, 78, 95, 0.08)' : 'transparent',
-            color: panel.publicado ? colors.teal : colors.muted,
-            cursor: 'pointer',
-            transition: `all 0.2s ${motionTokens.easeCss}`,
-          }}
-        >
-          {panel.publicado ? <Eye size={13} /> : <EyeOff size={13} />}
-          {panel.publicado ? 'Publicado' : 'Oculto'}
-        </Box>
+        {/* Interruptor real: se prende y se apaga sin abrir el formulario */}
+        <Toggle
+          activo={panel.publicado}
+          onCambiar={alternarPublicado}
+          etiqueta={panel.publicado ? 'Visible' : 'Oculto'}
+          ariaLabel={`${panel.publicado ? 'Ocultar' : 'Publicar'} ${panel.nombre} en la tienda`}
+        />
 
         <Box sx={{ display: 'flex', gap: 0.5 }}>
           <Box

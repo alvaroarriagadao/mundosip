@@ -4,8 +4,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, ChevronDown, FileDown, Loader2, Minus, Plus, ShoppingCart, Trash2, TriangleAlert } from 'lucide-react';
-import Image from 'next/image';
+import { Check, FileDown, Loader2, ShoppingCart, Trash2, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -18,11 +17,10 @@ import { EASE } from '@/lib/motion';
 import { colors, layout, motionTokens, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
 
+import PanelCaracteristicas from './PanelCaracteristicas';
+import PanelCard from './PanelCard';
 import type { PanelProducto } from './panel.types';
 import { cotizarPanelesSchema } from './pedido.schema';
-
-/** Imagen por defecto cuando el producto no trae la suya */
-const IMAGEN_DEFECTO = '/images/paneles/panel-sip.png';
 
 const datosSchema = cotizarPanelesSchema.pick({ nombre: true, email: true, telefono: true, web: true });
 type DatosInput = z.infer<typeof datosSchema>;
@@ -46,201 +44,6 @@ const campoSx = {
   '&:focus': { borderColor: colors.tan, bgcolor: 'rgba(246, 241, 234, 0.09)' },
 } as const;
 
-/** Control − cantidad + compartido entre cards y carrito */
-function Stepper({
-  cantidad,
-  onCambiar,
-  dark = false,
-  etiqueta,
-}: {
-  cantidad: number;
-  onCambiar: (nueva: number) => void;
-  dark?: boolean;
-  etiqueta: string;
-}) {
-  const botonSx = {
-    width: 30,
-    height: 30,
-    border: '1px solid',
-    borderColor: dark ? 'rgba(246, 241, 234, 0.3)' : 'divider',
-    borderRadius: `${radii.sm}px`,
-    bgcolor: 'transparent',
-    color: dark ? colors.cream : colors.teal,
-    display: 'grid',
-    placeItems: 'center',
-    cursor: 'pointer',
-    transition: `all 0.2s ${motionTokens.easeCss}`,
-    '&:hover': { borderColor: dark ? colors.cream : colors.teal },
-  } as const;
-
-  return (
-    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-      <Box component="button" type="button" aria-label={`Quitar uno de ${etiqueta}`} onClick={() => onCambiar(cantidad - 1)} sx={botonSx}>
-        <Minus size={14} strokeWidth={2.5} />
-      </Box>
-      <Typography
-        component="span"
-        aria-live="polite"
-        sx={{ fontFamily: monoFamily, fontWeight: 700, fontSize: '0.95rem', minWidth: 26, textAlign: 'center' }}
-      >
-        {cantidad}
-      </Typography>
-      <Box component="button" type="button" aria-label={`Agregar uno de ${etiqueta}`} onClick={() => onCambiar(cantidad + 1)} sx={botonSx}>
-        <Plus size={14} strokeWidth={2.5} />
-      </Box>
-    </Box>
-  );
-}
-
-/** Card compacta y uniforme de producto, con ficha técnica expandible */
-function PanelCard({
-  panel,
-  cantidad,
-  onCambiar,
-}: {
-  panel: PanelProducto;
-  cantidad: number;
-  onCambiar: (nueva: number) => void;
-}) {
-  const [fichaAbierta, setFichaAbierta] = useState(false);
-
-  const specs = [
-    ['Dimensiones', panel.dimensiones],
-    ['OSB', panel.espesorOsb],
-    ['Núcleo EPS', panel.espesorEps],
-    ['Densidad EPS', panel.densidadEps],
-    ['Apto para madera', panel.aptoParaMadera],
-  ].filter(([, valor]) => valor) as Array<[string, string]>;
-
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        borderRadius: `${radii.md}px`,
-        border: '1px solid',
-        borderColor: cantidad > 0 ? colors.teal : 'divider',
-        bgcolor: 'background.paper',
-        overflow: 'hidden',
-        transition: `border-color 0.25s ${motionTokens.easeCss}`,
-      }}
-    >
-      {/* Imagen contenida, misma proporción en todas las cards */}
-      <Box sx={{ position: 'relative', aspectRatio: '4 / 3', bgcolor: '#FBF9F5', borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Image
-          src={panel.imagenUrl || IMAGEN_DEFECTO}
-          alt={panel.nombre}
-          fill
-          sizes="(max-width: 600px) 50vw, (max-width: 1200px) 33vw, 260px"
-          style={{ objectFit: 'contain', padding: '14px' }}
-        />
-        {cantidad > 0 && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 10,
-              right: 10,
-              bgcolor: colors.teal,
-              color: colors.cream,
-              borderRadius: `${radii.pill}px`,
-              px: 1.25,
-              py: 0.4,
-              fontFamily: monoFamily,
-              fontWeight: 700,
-              fontSize: '0.75rem',
-            }}
-          >
-            ×{cantidad}
-          </Box>
-        )}
-      </Box>
-
-      <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
-        <Box>
-          <Typography sx={{ fontWeight: 700, fontSize: '0.98rem', lineHeight: 1.25 }}>{panel.nombre}</Typography>
-          <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mt: 0.25 }}>
-            {panel.dimensiones ?? 'Panel estructural SIP'}
-          </Typography>
-        </Box>
-
-        <Typography sx={{ fontFamily: monoFamily, fontWeight: 700, fontSize: '1.05rem' }}>
-          {formatCLP(panel.precioClp)}
-        </Typography>
-
-        {/* Ficha técnica plegada: mantiene las cards compactas */}
-        {specs.length > 0 && (
-          <Box>
-            <Box
-              component="button"
-              type="button"
-              onClick={() => setFichaAbierta((v) => !v)}
-              aria-expanded={fichaAbierta}
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.5,
-                border: 0,
-                bgcolor: 'transparent',
-                p: 0,
-                cursor: 'pointer',
-                color: colors.muted,
-                fontSize: '0.8rem',
-                '&:hover': { color: colors.teal },
-              }}
-            >
-              Ficha técnica
-              <Box
-                component="span"
-                aria-hidden
-                sx={{ display: 'grid', transition: `transform 0.25s ${motionTokens.easeCss}`, transform: fichaAbierta ? 'rotate(180deg)' : 'none' }}
-              >
-                <ChevronDown size={14} />
-              </Box>
-            </Box>
-            <AnimatePresence initial={false}>
-              {fichaAbierta && (
-                <motion.div
-                  key="ficha"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: EASE }}
-                  style={{ overflow: 'hidden' }}
-                >
-                  <Box sx={{ pt: 1 }}>
-                    {specs.map(([etiqueta, valor]) => (
-                      <Box key={etiqueta} sx={{ display: 'flex', justifyContent: 'space-between', gap: 1.5, py: 0.5, borderBottom: '1px dashed', borderColor: 'divider', '&:last-of-type': { borderBottom: 0 } }}>
-                        <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary' }}>{etiqueta}</Typography>
-                        <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, textAlign: 'right' }}>{valor}</Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Box>
-        )}
-
-        {/* Acción al fondo: todas las cards alinean su footer */}
-        <Box sx={{ mt: 'auto', pt: 0.5 }}>
-          {cantidad === 0 ? (
-            <Button variant="outlined" color="primary" size="small" fullWidth startIcon={<Plus size={15} />} onClick={() => onCambiar(1)}>
-              Agregar
-            </Button>
-          ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-              <Stepper cantidad={cantidad} onCambiar={onCambiar} etiqueta={panel.nombre} />
-              <Typography sx={{ fontFamily: monoFamily, fontWeight: 700, fontSize: '0.9rem' }}>
-                {formatCLP(panel.precioClp * cantidad)}
-              </Typography>
-            </Box>
-          )}
-        </Box>
-      </Box>
-    </Box>
-  );
-}
-
 /**
  * Tienda de paneles: catálogo desde la DB + carrito con cantidades.
  * "Cotizar" descarga un PDF con folio y deja el pedido registrado
@@ -251,6 +54,8 @@ export default function PanelesShop({ paneles }: { paneles: PanelProducto[] }) {
   const [carrito, setCarrito] = useState<ReadonlyMap<string, number>>(new Map());
   const [estado, setEstado] = useState<Estado>('idle');
   const [folio, setFolio] = useState<string | null>(null);
+  /** Producto cuya ficha se está mirando en el modal */
+  const [detalle, setDetalle] = useState<PanelProducto | null>(null);
 
   const lineas = useMemo(
     () =>
@@ -335,11 +140,11 @@ export default function PanelesShop({ paneles }: { paneles: PanelProducto[] }) {
         alignItems: 'start',
       }}
     >
-      {/* ── Catálogo ── */}
+      {/* ── Catálogo: 2 columnas para que las cards respiren a lo ancho ── */}
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)' },
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
           gap: { xs: 1.5, md: 2 },
           alignItems: 'stretch',
         }}
@@ -350,10 +155,13 @@ export default function PanelesShop({ paneles }: { paneles: PanelProducto[] }) {
               panel={panel}
               cantidad={carrito.get(panel.slug) ?? 0}
               onCambiar={(nueva) => cambiarCantidad(panel.slug, nueva)}
+              onVerCaracteristicas={() => setDetalle(panel)}
             />
           </Reveal>
         ))}
       </Box>
+
+      <PanelCaracteristicas panel={detalle} onCerrar={() => setDetalle(null)} />
 
       {/* ── Carrito sticky ── */}
       <Box sx={{ position: { lg: 'sticky' }, top: { lg: `${layout.headerHeight.desktop + 24}px` } }}>
