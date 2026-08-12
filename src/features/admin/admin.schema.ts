@@ -67,6 +67,46 @@ export const panelSchema = z.object({
 
 export type PanelInput = z.infer<typeof panelSchema>;
 
+/** Ficha del modelo de casa: los datos de cabecera */
+export const modeloSchema = z.object({
+  nombre: z.string().trim().min(2, 'Nombre muy corto').max(60),
+  superficieM2: z.number().int().positive('Debe ser mayor a 0').max(2000),
+  habitaciones: z.number().int().min(0).max(20),
+  banos: z.number().int().min(0).max(20),
+  precioDesdeCLP: z.number().int('Pesos enteros').positive('Debe ser mayor a 0').max(2_000_000_000),
+  resumen: z.string().trim().max(200),
+  descripcion: z.string().trim().max(1200),
+  destacado: z.boolean(),
+  publicado: z.boolean(),
+});
+
+/** Listas de texto del modelo, guardadas en bloque (reemplazo total) */
+export const modeloListasSchema = z.object({
+  caracteristicas: z.array(z.string().trim().min(2).max(200)).max(20),
+  kitInicial: z.array(z.string().trim().min(2).max(200)).max(40),
+  kitFullExtras: z.array(z.string().trim().min(2).max(200)).max(20),
+});
+
+const imagenSchema = z.object({
+  url: z
+    .string()
+    .trim()
+    .min(1)
+    .max(400)
+    .refine((v) => v.startsWith('/') || v.startsWith('https://'), 'Imagen inválida'),
+  alt: z.string().trim().max(160),
+});
+
+/** Portada + galería, guardadas en bloque y en orden */
+export const modeloImagenesSchema = z.object({
+  portada: imagenSchema.nullable(),
+  galeria: z.array(imagenSchema).max(12),
+});
+
+export type ModeloInput = z.infer<typeof modeloSchema>;
+export type ModeloListasInput = z.infer<typeof modeloListasSchema>;
+export type ModeloImagenesInput = z.infer<typeof modeloImagenesSchema>;
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ItemUpdateInput = z.infer<typeof itemUpdateSchema>;
 export type ItemCreateInput = z.infer<typeof itemCreateSchema>;

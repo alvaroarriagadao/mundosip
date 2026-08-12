@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { ArrowRight, FileText, Package } from 'lucide-react';
+import { ArrowRight, FileText, Home, Package } from 'lucide-react';
 
 import Container from '@/components/ui/Container';
 import Eyebrow from '@/components/ui/Eyebrow';
@@ -20,6 +20,12 @@ export const dynamic = 'force-dynamic';
 
 /** Las secciones del panel: esta lista crece a medida que el CMS propio crece */
 const SECCIONES = [
+  {
+    href: '/admin/modelos',
+    icono: <Home size={22} strokeWidth={2} />,
+    titulo: 'Modelos de casa',
+    descripcion: 'El catálogo de /modelos: ficha, fotos, características y kits. Se crean como borrador y se publican cuando estén listos.',
+  },
   {
     href: '/admin/cotizaciones',
     icono: <FileText size={22} strokeWidth={2} />,

@@ -1,9 +1,9 @@
 import type { Faq } from '@/features/faqs/faq.types';
 import type { Modelo } from '@/features/modelos/modelo.types';
+import { getModeloPorSlug, getModelosPublicados } from '@/features/modelos/modelos.db';
 import type { Proyecto, RegionProyecto } from '@/features/proyectos/proyecto.types';
 
 import { faqs } from './faqs';
-import { modelos } from './modelos';
 import { proyectos } from './proyectos';
 
 /**
@@ -18,12 +18,15 @@ export async function getFaqs(): Promise<Faq[]> {
   return [...faqs].sort((a, b) => a.orden - b.orden);
 }
 
+// Los modelos viven en Neon y los administra el equipo en /admin/modelos.
+// El repositorio sigue siendo la única puerta de entrada para las páginas.
+
 export async function getModelos(): Promise<Modelo[]> {
-  return [...modelos].sort((a, b) => a.orden - b.orden);
+  return getModelosPublicados();
 }
 
 export async function getModeloBySlug(slug: string): Promise<Modelo | undefined> {
-  return modelos.find((m) => m.slug === slug);
+  return getModeloPorSlug(slug);
 }
 
 // Los paneles ya migraron a la DB (fase CMS propia): ver

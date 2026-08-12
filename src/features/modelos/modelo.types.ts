@@ -41,5 +41,7 @@ export interface Modelo {
   /** Galería de la ficha (2–12 imágenes) */
   galeria: ImagenModelo[];
   destacado: boolean;
+  /** false = borrador: no aparece en el sitio, pero se puede previsualizar */
+  publicado: boolean;
   orden: number;
 }
