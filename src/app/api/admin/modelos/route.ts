@@ -64,7 +64,32 @@ export async function POST(request: Request) {
       returning id, slug
     `) as Array<{ id: string; slug: string }>;
 
-    return NextResponse.json({ ok: true, id: fila.id, slug: fila.slug });
+    /*
+     * Los kits son casi idénticos entre modelos —lo que cambia es el
+     * precio—, así que el modelo nuevo nace con los del modelo más
+     * antiguo ya copiados. El equipo ajusta lo puntual en vez de
+     * escribir catorce líneas desde cero.
+     */
+    const [origen] = (await sql`
+      select modelo_id from kit_items
+      where modelo_id <> ${fila.id}
+      group by modelo_id
+      order by count(*) desc
+      limit 1
+    `) as Array<{ modelo_id: string }>;
+
+    let kitsCopiados = 0;
+    if (origen) {
+      const copiados = (await sql`
+        insert into kit_items (modelo_id, tipo, texto, orden)
+        select ${fila.id}, tipo, texto, orden
+        from kit_items where modelo_id = ${origen.modelo_id}
+        returning id
+      `) as unknown[];
+      kitsCopiados = copiados.length;
+    }
+
+    return NextResponse.json({ ok: true, id: fila.id, slug: fila.slug, kitsCopiados });
   } catch (error) {
     console.error('[admin/modelos] error creando modelo', error);
     return NextResponse.json({ ok: false, error: 'No se pudo crear el modelo.' }, { status: 500 });

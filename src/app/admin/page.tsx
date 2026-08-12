@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { ArrowRight, FileText, Home, Package } from 'lucide-react';
+import { ArrowRight, Calculator, House, Layers } from 'lucide-react';
 
 import Container from '@/components/ui/Container';
 import Eyebrow from '@/components/ui/Eyebrow';
@@ -18,23 +18,33 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-/** Las secciones del panel: esta lista crece a medida que el CMS propio crece */
+/**
+ * Las secciones del panel. Cada una con su color e ícono propios: con
+ * tres tarjetas iguales en gris cuesta distinguirlas de un vistazo, y
+ * el color es lo primero que el ojo reconoce.
+ */
 const SECCIONES = [
   {
     href: '/admin/modelos',
-    icono: <Home size={22} strokeWidth={2} />,
+    icono: <House size={26} strokeWidth={1.75} />,
+    color: colors.teal,
+    fondo: 'rgba(32, 78, 95, 0.12)',
     titulo: 'Modelos de casa',
     descripcion: 'El catálogo de /modelos: ficha, fotos, características y kits. Se crean como borrador y se publican cuando estén listos.',
   },
   {
     href: '/admin/cotizaciones',
-    icono: <FileText size={22} strokeWidth={2} />,
+    icono: <Calculator size={26} strokeWidth={1.75} />,
+    color: colors.tanDark,
+    fondo: 'rgba(185, 138, 78, 0.16)',
     titulo: 'Cotizaciones de casas',
     descripcion: 'Plantillas llave en mano por modelo y kit: partidas, precios, descuento y las cotizaciones emitidas por clientes.',
   },
   {
     href: '/admin/paneles',
-    icono: <Package size={22} strokeWidth={2} />,
+    icono: <Layers size={26} strokeWidth={1.75} />,
+    color: '#4E7A5E',
+    fondo: 'rgba(78, 122, 94, 0.14)',
     titulo: 'Tienda de paneles',
     descripcion: 'Los productos de /paneles: crear, editar precios y fichas, publicar u ocultar, y los pedidos cotizados.',
   },
@@ -94,13 +104,13 @@ export default async function AdminPage() {
                 aria-hidden
                 sx={{
                   flexShrink: 0,
-                  width: 48,
-                  height: 48,
+                  width: 54,
+                  height: 54,
                   borderRadius: `${radii.md}px`,
                   display: 'grid',
                   placeItems: 'center',
-                  bgcolor: 'rgba(32, 78, 95, 0.09)',
-                  color: colors.teal,
+                  bgcolor: seccion.fondo,
+                  color: seccion.color,
                 }}
               >
                 {seccion.icono}

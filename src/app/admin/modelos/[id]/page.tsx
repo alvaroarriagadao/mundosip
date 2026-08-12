@@ -9,7 +9,7 @@ import Eyebrow from '@/components/ui/Eyebrow';
 import Section from '@/components/ui/Section';
 import EditorModelo from '@/features/admin/EditorModelo';
 import { exigirAdmin } from '@/features/admin/auth';
-import { getKitsCotizablesDeModelo, getModeloPorId } from '@/features/modelos/modelos.db';
+import { getKitsCotizablesDeModelo, getModeloPorId, getModelosAdmin } from '@/features/modelos/modelos.db';
 import { colors } from '@/theme/tokens';
 
 export const metadata: Metadata = {
@@ -29,7 +29,14 @@ export default async function EditarModeloPage({ params }: EditarModeloPageProps
   const modelo = await getModeloPorId(id).catch(() => undefined);
   if (!modelo) notFound();
 
-  const kitsCotizables = await getKitsCotizablesDeModelo(modelo.slug).catch(() => []);
+  const [kitsCotizables, todos] = await Promise.all([
+    getKitsCotizablesDeModelo(modelo.slug).catch(() => []),
+    getModelosAdmin().catch(() => []),
+  ]);
+  // Solo los que tienen kits cargados sirven para copiar
+  const otrosModelos = todos
+    .filter((m) => m.id !== modelo.id && (m.kitInicial.length > 0 || m.kitFullExtras.length > 0))
+    .map((m) => ({ id: m.id, nombre: m.nombre }));
 
   return (
     <Section tone="paper" belowHeader>
@@ -60,7 +67,7 @@ export default async function EditarModeloPage({ params }: EditarModeloPageProps
           <Typography sx={{ mt: 1, color: 'text.secondary' }}>/modelos/{modelo.slug}</Typography>
         </Box>
 
-        <EditorModelo modelo={modelo} kitsCotizables={kitsCotizables} />
+        <EditorModelo modelo={modelo} kitsCotizables={kitsCotizables} otrosModelos={otrosModelos} />
       </Container>
     </Section>
   );

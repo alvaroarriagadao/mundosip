@@ -2,7 +2,7 @@
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { Check, ExternalLink, Eye, FileText, Loader2, Save, TriangleAlert } from 'lucide-react';
+import { Check, Copy, ExternalLink, Eye, FileText, Loader2, Save, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
 import Button from '@/components/ui/Button';
@@ -22,6 +22,12 @@ export interface KitCotizable {
   id: string;
   kit: string;
   items: number;
+}
+
+/** Los otros modelos, para poder copiarles los kits */
+export interface ModeloHermano {
+  id: string;
+  nombre: string;
 }
 
 /** Bloque con título, para dividir el formulario en pasos legibles */
@@ -86,9 +92,11 @@ function BotonGuardar({ estado, onClick, disabled = false }: { estado: Estado; o
 export default function EditorModelo({
   modelo,
   kitsCotizables,
+  otrosModelos,
 }: {
   modelo: Modelo;
   kitsCotizables: KitCotizable[];
+  otrosModelos: ModeloHermano[];
 }) {
   // ── Ficha ──
   const [nombre, setNombre] = useState(modelo.nombre);
@@ -108,6 +116,33 @@ export default function EditorModelo({
   const [kitInicial, setKitInicial] = useState<string[]>(modelo.kitInicial);
   const [kitFullExtras, setKitFullExtras] = useState<string[]>(modelo.kitFullExtras);
   const [estadoListas, setEstadoListas] = useState<Estado>('idle');
+  const [copiando, setCopiando] = useState(false);
+
+  /** Trae los kits de otro modelo a la pantalla (no guarda: eso lo decide el equipo) */
+  async function copiarKitsDe(desdeModeloId: string) {
+    if (!desdeModeloId) return;
+    const hayContenido = kitInicial.length > 0 || kitFullExtras.length > 0;
+    if (hayContenido && !window.confirm('Esto reemplaza los kits que tienes en pantalla. ¿Continuar?')) {
+      return;
+    }
+    setCopiando(true);
+    try {
+      const respuesta = await fetch(`/api/admin/modelos/${modelo.id}/copiar-kits`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ desdeModeloId }),
+      });
+      const datos = (await respuesta.json().catch(() => null)) as
+        | { kitInicial?: string[]; kitFullExtras?: string[] }
+        | null;
+      if (respuesta.ok && datos) {
+        setKitInicial(datos.kitInicial ?? []);
+        setKitFullExtras(datos.kitFullExtras ?? []);
+      }
+    } finally {
+      setCopiando(false);
+    }
+  }
 
   // ── Imágenes ──
   const [portada, setPortada] = useState<ImagenModelo | null>(modelo.portada.url ? modelo.portada : null);
@@ -337,6 +372,50 @@ export default function EditorModelo({
         titulo="Qué incluye cada kit"
         descripcion="El Kit Inicial es la base. En el Kit Full solo se anota lo que agrega además de esa base."
       >
+        {/* Los kits son casi iguales entre modelos: copiarlos evita
+            reescribir catorce líneas cada vez */}
+        {otrosModelos.length > 0 && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              flexWrap: 'wrap',
+              p: 1.75,
+              mb: 3,
+              borderRadius: `${radii.sm}px`,
+              bgcolor: 'rgba(32, 78, 95, 0.05)',
+              border: '1px dashed',
+              borderColor: 'divider',
+            }}
+          >
+            <Box aria-hidden sx={{ color: colors.teal, display: 'grid' }}>
+              <Copy size={16} />
+            </Box>
+            <Typography sx={{ fontSize: '0.9rem', fontWeight: 600 }}>
+              Copiar los kits de otro modelo
+            </Typography>
+            <Box
+              component="select"
+              aria-label="Modelo del que copiar los kits"
+              defaultValue=""
+              disabled={copiando}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                void copiarKitsDe(e.target.value);
+                e.target.value = '';
+              }}
+              sx={{ ...inputSx, width: 'auto', minWidth: 190, cursor: 'pointer' }}
+            >
+              <option value="">{copiando ? 'Copiando…' : 'Elige un modelo…'}</option>
+              {otrosModelos.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.nombre}
+                </option>
+              ))}
+            </Box>
+          </Box>
+        )}
+
         <Box sx={{ mb: 3 }}>
           <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 1 }}>Kit Inicial</Typography>
           <ListaEditable

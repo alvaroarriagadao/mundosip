@@ -11,6 +11,10 @@ import ModeloCard from '@/features/modelos/ModeloCard';
 import { getModelos } from '@/data/repository';
 import { layout } from '@/theme/tokens';
 
+// El catálogo lo edita el equipo en /admin/modelos: publicar u ocultar
+// un modelo debe verse de inmediato, no en el próximo build
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Modelos',
   description:
