@@ -23,6 +23,7 @@
     "@mui/material-nextjs": "^9.1.1",
     "@neondatabase/serverless": "^1.1.0",
     "@react-pdf/renderer": "^4.5.1",
+    "@vercel/blob": "^2.8.0",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.42.2",

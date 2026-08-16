@@ -7,17 +7,16 @@ import Reveal from '@/components/ui/Reveal';
 import Section from '@/components/ui/Section';
 import { radii } from '@/theme/tokens';
 
-import { urlEmbedVideo } from './video';
+import { medioVideo } from './video';
 
 /**
- * Video del proyecto (opcional): el equipo pega un link de YouTube o
- * Vimeo en el admin y aquí se muestra embebido. Si el link no es
- * reconocible, la sección simplemente no se renderiza.
+ * Video del proyecto (opcional): un archivo corto subido desde el
+ * panel (se sirve como <video>) o un link de YouTube/Vimeo embebido.
+ * Si la URL no es reconocible, la sección simplemente no se renderiza.
  */
 export default function ProjectVideo({ nombre, videoUrl }: { nombre: string; videoUrl: string | null }) {
-  if (!videoUrl) return null;
-  const embed = urlEmbedVideo(videoUrl);
-  if (!embed) return null;
+  const medio = medioVideo(videoUrl);
+  if (!medio) return null;
 
   return (
     <Section tone="paper" sx={{ pt: 0 }}>
@@ -38,16 +37,28 @@ export default function ProjectVideo({ nombre, videoUrl }: { nombre: string; vid
               bgcolor: 'rgba(13, 33, 41, 0.06)',
             }}
           >
-            <Box
-              component="iframe"
-              src={embed}
-              title={`Video del proyecto ${nombre}`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="strict-origin-when-cross-origin"
-              sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
-            />
+            {medio.tipo === 'archivo' ? (
+              <Box
+                component="video"
+                src={medio.src}
+                controls
+                playsInline
+                preload="metadata"
+                aria-label={`Video del proyecto ${nombre}`}
+                sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              <Box
+                component="iframe"
+                src={medio.src}
+                title={`Video del proyecto ${nombre}`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+                sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+              />
+            )}
           </Box>
         </Reveal>
       </Container>

@@ -2,19 +2,20 @@
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { Check, Eye, TriangleAlert } from 'lucide-react';
+import { Eye, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
 import Button from '@/components/ui/Button';
 import Toggle from '@/components/ui/Toggle';
 import type { EstadoProyecto, ImagenProyecto, Proyecto } from '@/features/proyectos/proyecto.types';
 import { REGIONES_CHILE, lugarDeUbicacion } from '@/features/proyectos/regiones';
-import { urlEmbedVideo } from '@/features/proyectos/video';
+import { medioVideo } from '@/features/proyectos/video';
 import { colors, radii } from '@/theme/tokens';
 
 import { BotonGuardar, Seccion, type Estado } from './Bloques';
 import FotoUnica from './FotoUnica';
 import GaleriaFotos from './GaleriaFotos';
+import SelectorVideo from './SelectorVideo';
 import VistaPreviaProyecto from './VistaPreviaProyecto';
 import { etiquetaSx, inputNumeroSx, inputSx } from './ui';
 
@@ -62,7 +63,7 @@ export default function EditorProyecto({ proyecto }: { proyecto: Proyecto }) {
     anoDiseno: Number(anoDiseno),
     anoConstruccion: Number(anoConstruccion),
   };
-  const videoValido = videoUrl.trim() === '' || urlEmbedVideo(videoUrl) != null;
+  const videoValido = videoUrl.trim() === '' || medioVideo(videoUrl) != null;
   const fichaValida =
     nombre.trim().length >= 2 &&
     lugar.trim().length >= 2 &&
@@ -315,21 +316,9 @@ export default function EditorProyecto({ proyecto }: { proyecto: Proyecto }) {
               <Box>
                 <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 0.25 }}>Video de la reseña</Typography>
                 <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mb: 1.25 }}>
-                  Acompaña los textos de “La casa” en lugar de la foto. Pega el link de YouTube o Vimeo
-                  tal como lo copias del navegador.
+                  Acompaña los textos de “La casa” en lugar de la foto.
                 </Typography>
-                <Box component="input" value={videoUrl} placeholder="https://www.youtube.com/watch?v=…" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVideoUrl(e.target.value)} sx={inputSx} />
-                {videoUrl.trim() !== '' && (
-                  videoValido ? (
-                    <Typography sx={{ mt: 1, fontSize: '0.82rem', color: colors.teal, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                      <Check size={14} strokeWidth={2.5} /> Video reconocido.
-                    </Typography>
-                  ) : (
-                    <Typography sx={{ mt: 1, fontSize: '0.82rem', color: '#B4472E', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                      <TriangleAlert size={13} /> Ese link no parece de YouTube ni Vimeo.
-                    </Typography>
-                  )
-                )}
+                <SelectorVideo valor={videoUrl} onCambiar={setVideoUrl} />
               </Box>
             ) : (
               <FotoUnica
@@ -375,20 +364,9 @@ export default function EditorProyecto({ proyecto }: { proyecto: Proyecto }) {
       {!videoEnResena && (
         <Seccion
           titulo="Video (opcional)"
-          descripcion="Pega el link de YouTube o Vimeo tal como lo copias del navegador. Se muestra entre la reseña y la galería. (Si prefieres que reemplace la foto de la reseña, actívalo en el bloque de fotos.)"
+          descripcion="Sube un video corto (20–30 segundos) o pega un link de YouTube/Vimeo. Se muestra entre la reseña y la galería. (Si prefieres que reemplace la foto de la reseña, actívalo en el bloque de fotos.)"
         >
-          <Box component="input" value={videoUrl} placeholder="https://www.youtube.com/watch?v=…" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVideoUrl(e.target.value)} sx={inputSx} />
-          {videoUrl.trim() !== '' && (
-            videoValido ? (
-              <Typography sx={{ mt: 1, fontSize: '0.85rem', color: colors.teal, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                <Check size={15} strokeWidth={2.5} /> Video reconocido: se verá en la página.
-              </Typography>
-            ) : (
-              <Typography sx={{ mt: 1, fontSize: '0.85rem', color: '#B4472E', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                <TriangleAlert size={14} /> Ese link no parece de YouTube ni Vimeo.
-              </Typography>
-            )
-          )}
+          <SelectorVideo valor={videoUrl} onCambiar={setVideoUrl} />
           <BotonGuardar estado={estadoFicha} onClick={guardarFicha} disabled={!fichaValida} />
         </Seccion>
       )}
@@ -396,12 +374,19 @@ export default function EditorProyecto({ proyecto }: { proyecto: Proyecto }) {
 
       {/* ── Maqueta en vivo (solo pantallas grandes; en el resto está “Previsualizar”) ── */}
       <Box
+        // Sin esto Lenis captura la rueda y el panel no scrollea por dentro
+        data-lenis-prevent=""
         sx={{
           display: { xs: 'none', lg: 'block' },
           position: 'sticky',
           top: 100,
           maxHeight: 'calc(100vh - 120px)',
           overflowY: 'auto',
+          overscrollBehavior: 'contain',
+          pr: 0.5,
+          scrollbarWidth: 'thin',
+          '&::-webkit-scrollbar': { width: 6 },
+          '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(13, 33, 41, 0.18)', borderRadius: 3 },
         }}
       >
         <VistaPreviaProyecto

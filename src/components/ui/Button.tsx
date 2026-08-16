@@ -76,7 +76,9 @@ export default function Button({ arrow = false, onDark = false, sx, children, hr
       {...(href
         ? isExternal
           ? { component: 'a' as const, href, target, rel }
-          : { component: NextLink, href }
+          : // NextLink también respeta target/rel: sin esto, "abrir en otra
+            // pestaña" se perdía y el link navegaba en la misma
+            { component: NextLink, href, target, rel }
         : {})}
       endIcon={arrow ? <ArrowSwap /> : rest.endIcon}
       sx={[darkStyles, ...(Array.isArray(sx) ? sx : [sx])]}

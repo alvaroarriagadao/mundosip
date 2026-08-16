@@ -9,7 +9,7 @@ import Section from '@/components/ui/Section';
 import type { Proyecto } from '@/features/proyectos/proyecto.types';
 import { radii } from '@/theme/tokens';
 
-import { urlEmbedVideo } from './video';
+import { medioVideo } from './video';
 
 /**
  * Reseña breve del proyecto: párrafo destacado elegante + una pieza de
@@ -23,7 +23,7 @@ export default function ProjectResena({ proyecto }: { proyecto: Proyecto }) {
   const hayTextos = proyecto.resenaDestacada.trim() !== '' || proyecto.resena.trim() !== '';
   if (!hayTextos) return null;
 
-  const embed = proyecto.videoEnResena && proyecto.videoUrl ? urlEmbedVideo(proyecto.videoUrl) : null;
+  const medio = proyecto.videoEnResena ? medioVideo(proyecto.videoUrl) : null;
 
   return (
     <Section tone="paper">
@@ -65,7 +65,7 @@ export default function ProjectResena({ proyecto }: { proyecto: Proyecto }) {
             )}
           </Box>
           <Reveal delay={0.15}>
-            {embed ? (
+            {medio ? (
               <Box
                 sx={{
                   position: 'relative',
@@ -75,16 +75,28 @@ export default function ProjectResena({ proyecto }: { proyecto: Proyecto }) {
                   bgcolor: 'rgba(13, 33, 41, 0.06)',
                 }}
               >
-                <Box
-                  component="iframe"
-                  src={embed}
-                  title={`Video del proyecto ${proyecto.nombre}`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
-                />
+                {medio.tipo === 'archivo' ? (
+                  <Box
+                    component="video"
+                    src={medio.src}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    aria-label={`Video del proyecto ${proyecto.nombre}`}
+                    sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <Box
+                    component="iframe"
+                    src={medio.src}
+                    title={`Video del proyecto ${proyecto.nombre}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+                  />
+                )}
               </Box>
             ) : (
               <Box

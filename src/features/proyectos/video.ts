@@ -21,3 +21,23 @@ export function urlEmbedVideo(url: string): string | null {
 
   return null;
 }
+
+/** Archivo de video subido desde el panel (Vercel Blob) o un .mp4/.webm directo */
+export function esVideoArchivo(url: string): boolean {
+  const limpia = url.trim();
+  if (!limpia.startsWith('https://')) return false;
+  return /\.(mp4|webm|mov)(\?.*)?$/i.test(limpia) || limpia.includes('blob.vercel-storage.com');
+}
+
+export type MedioVideo =
+  | { tipo: 'embed'; src: string } // YouTube/Vimeo → iframe
+  | { tipo: 'archivo'; src: string }; // archivo subido → <video>
+
+/** Clasifica el video del proyecto; null si la URL no es reconocible */
+export function medioVideo(url: string | null): MedioVideo | null {
+  if (!url || !url.trim()) return null;
+  const embed = urlEmbedVideo(url);
+  if (embed) return { tipo: 'embed', src: embed };
+  if (esVideoArchivo(url)) return { tipo: 'archivo', src: url.trim() };
+  return null;
+}

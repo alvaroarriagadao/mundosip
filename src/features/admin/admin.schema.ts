@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { REGIONES_CHILE } from '@/features/proyectos/regiones';
-import { urlEmbedVideo } from '@/features/proyectos/video';
+import { medioVideo } from '@/features/proyectos/video';
 
 /** Payloads de la API del admin de cotizaciones. */
 
@@ -129,7 +129,7 @@ export const proyectoSchema = z.object({
     .max(300)
     .transform((v) => v || null)
     .nullable()
-    .refine((v) => v == null || urlEmbedVideo(v) != null, 'Pega un link de YouTube o Vimeo'),
+    .refine((v) => v == null || medioVideo(v) != null, 'Sube un video o pega un link de YouTube/Vimeo'),
   /** true = el video se muestra junto a la reseña, en vez de la foto */
   videoEnResena: z.boolean(),
   estado: z.enum(['terminada', 'en_proceso']),
