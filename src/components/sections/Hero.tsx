@@ -20,7 +20,7 @@ interface HeroProps {
   posterSrc?: string;
 }
 
-const headlineLines = ['Tu próxima casa,', 'lista para armar.'];
+const headlineLines = ['Tus ideas,', 'una estructura que las sostiene.'];
 
 const specs = ['Kits de autoconstrucción', 'Panelizado a medida', 'Despacho a todo Chile'];
 
@@ -144,7 +144,7 @@ export default function Hero({ videoSrc, posterSrc }: HeroProps) {
             </Eyebrow>
           </motion.div>
 
-          <Typography component="h1" variant="h1" sx={{ mt: 2.5, mb: 3.5, maxWidth: '13ch' }}>
+          <Typography component="h1" variant="h1" sx={{ mt: 2.5, mb: 3.5, maxWidth: '15ch' }}>
             {headlineLines.map((line, i) => (
               <Box key={line} component="span" sx={{ display: 'block', overflow: 'hidden', pb: '0.08em', mb: '-0.08em' }}>
                 <motion.span variants={lineReveal} style={{ display: 'block' }}>
@@ -168,10 +168,11 @@ export default function Hero({ videoSrc, posterSrc }: HeroProps) {
           >
             <Typography
               variant="subtitle1"
-              sx={{ maxWidth: 560, color: 'rgba(246, 241, 234, 0.82)', mb: 5 }}
+              sx={{ maxWidth: 620, color: 'rgba(246, 241, 234, 0.82)', mb: 5 }}
             >
-              Diseñamos modelos propios y los convertimos en kits de autoconstrucción en panel SIP:
-              precisos, térmicamente eficientes y listos para montar en semanas, no meses.
+              Fabricamos paneles SIP que permiten construir de forma eficiente, rápida y precisa.
+              Una estructura que se adapta a distintas formas de habitar, donde la piel exterior
+              puede ser tan diversa como cada proyecto.
             </Typography>
           </motion.div>
 
@@ -183,7 +184,7 @@ export default function Hero({ videoSrc, posterSrc }: HeroProps) {
           >
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <Button variant="contained" color="secondary" size="large" arrow href="/modelos">
-                Ver modelos
+                Ver diseños
               </Button>
               <Button variant="outlined" size="large" onDark href="/contacto">
                 Cotizar mi proyecto

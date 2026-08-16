@@ -15,7 +15,12 @@ import { getProyectos } from '@/data/repository';
  * no crece aunque haya 40 obras publicadas.
  */
 export default async function FeaturedProjects() {
-  const proyectos = await getProyectos();
+  // Si la base falla, la portada se muestra igual sin esta sección: un
+  // problema de datos no debería dejar el home entero en error
+  const proyectos = await getProyectos().catch((error) => {
+    console.error('[home] no se pudieron cargar los proyectos destacados', error);
+    return [];
+  });
   const destacados = proyectos.filter((p) => p.destacado).slice(0, 2);
 
   if (destacados.length === 0) return null;

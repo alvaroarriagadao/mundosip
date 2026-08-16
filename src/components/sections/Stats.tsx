@@ -16,11 +16,15 @@ interface Stat {
   label: string;
 }
 
+/*
+ * Falta "De paneles fabricados": en el material que pasó el equipo venía
+ * como 00.000 m², o sea todavía sin definir. Se agrega en cuanto llegue
+ * la cifra real; mientras tanto no se publica un número inventado.
+ */
 const stats: Stat[] = [
-  { value: 12, label: 'Años construyendo en SIP' },
-  { value: 350, prefix: '+', label: 'Proyectos panelizados' },
-  { value: 48000, unit: 'm²', label: 'De paneles fabricados' },
-  { value: 16, label: 'Regiones con despacho' },
+  { value: 4, label: 'Años construyendo en SIP' },
+  { value: 1363, prefix: '+', unit: 'm²', label: 'Construidos' },
+  { value: 4, label: 'Regiones con despacho' },
 ];
 
 export default function Stats() {
@@ -43,10 +47,22 @@ export default function Stats() {
             </Typography>
           </Reveal>
           <Reveal delay={0.12}>
+            <Typography
+              component="p"
+              sx={{
+                fontWeight: 700,
+                fontSize: 'clamp(1.15rem, 1.9vw, 1.5rem)',
+                lineHeight: 1.35,
+                color: 'text.primary',
+                maxWidth: 520,
+                mb: 2,
+              }}
+            >
+              Y la nuestra se construye en terreno.
+            </Typography>
             <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 520 }}>
-              Más de una década panelizando casas a lo largo de Chile nos enseñó algo simple: la
-              precisión en fábrica ahorra semanas en obra. Cada kit sale dimensionado, rotulado y
-              listo para armar.
+              Fabricamos algo que conocemos desde su origen hasta su comportamiento en terreno.
+              Precisión en fábrica. Experiencia en obra.
             </Typography>
           </Reveal>
         </Box>
@@ -54,7 +70,7 @@ export default function Stats() {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' },
+            gridTemplateColumns: { xs: '1fr 1fr', md: `repeat(${stats.length}, 1fr)` },
             gap: { xs: 4, md: 5 },
           }}
         >
