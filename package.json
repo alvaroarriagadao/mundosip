@@ -10,7 +10,8 @@
     "hero:video": "bash scripts/hero-video.sh",
     "hero:comparar": "bash scripts/hero-video-comparar.sh",
     "db:aplicar": "node scripts/db-aplicar.mjs",
-    "cotizaciones:importar": "node scripts/importar-cotizaciones.mjs"
+    "cotizaciones:importar": "node scripts/importar-cotizaciones.mjs",
+    "proyectos:seed": "node scripts/seed-proyectos.mjs"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",

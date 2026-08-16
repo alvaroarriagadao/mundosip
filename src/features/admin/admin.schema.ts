@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+import { REGIONES_CHILE } from '@/features/proyectos/regiones';
+import { urlEmbedVideo } from '@/features/proyectos/video';
+
 /** Payloads de la API del admin de cotizaciones. */
 
 export const loginSchema = z.object({
@@ -102,6 +105,45 @@ export const modeloImagenesSchema = z.object({
   portada: imagenSchema.nullable(),
   galeria: z.array(imagenSchema).max(12),
 });
+
+/**
+ * Ficha de un proyecto construido. El equipo elige región de la lista
+ * fija y escribe solo la comuna: la ubicación completa ("Panguipulli,
+ * Región de Los Ríos") se arma en el servidor.
+ */
+export const proyectoSchema = z.object({
+  nombre: z.string().trim().min(2, 'Nombre muy corto').max(80),
+  regionSlug: z
+    .string()
+    .refine((v) => REGIONES_CHILE.some((r) => r.slug === v), 'Elige una región de la lista'),
+  lugar: z.string().trim().min(2, 'Indica la comuna o el lugar').max(80),
+  superficieM2: z.number().int().positive('Debe ser mayor a 0').max(10_000),
+  anoDiseno: z.number().int().min(1990, 'Revisa el año').max(2100, 'Revisa el año'),
+  anoConstruccion: z.number().int().min(1990, 'Revisa el año').max(2100, 'Revisa el año'),
+  resumen: z.string().trim().max(200),
+  resenaDestacada: z.string().trim().max(700),
+  resena: z.string().trim().max(900),
+  videoUrl: z
+    .string()
+    .trim()
+    .max(300)
+    .transform((v) => v || null)
+    .nullable()
+    .refine((v) => v == null || urlEmbedVideo(v) != null, 'Pega un link de YouTube o Vimeo'),
+  estado: z.enum(['terminada', 'en_proceso']),
+  destacado: z.boolean(),
+  publicado: z.boolean(),
+});
+
+/** Las tres fotos con rol del proyecto, guardadas en bloque y en orden */
+export const proyectoImagenesSchema = z.object({
+  portada: imagenSchema.nullable(),
+  imagenResena: imagenSchema.nullable(),
+  galeria: z.array(imagenSchema).max(14),
+});
+
+export type ProyectoInput = z.infer<typeof proyectoSchema>;
+export type ProyectoImagenesInput = z.infer<typeof proyectoImagenesSchema>;
 
 export type ModeloInput = z.infer<typeof modeloSchema>;
 export type ModeloListasInput = z.infer<typeof modeloListasSchema>;

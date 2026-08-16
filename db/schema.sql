@@ -369,3 +369,17 @@ create table if not exists imagenes (
   bytes       integer not null check (bytes > 0),
   created_at  timestamptz not null default now()
 );
+
+-- ------------------------------------------------------------
+--  MIGRACIÓN 008 — Proyectos administrables (CMS de obras)
+--
+--  La tabla `proyectos` existía desde el diseño inicial; recién
+--  ahora se usa. Se suman dos campos:
+--   * estado: obra terminada u obra en proceso — el sitio la
+--     distingue con una etiqueta "En construcción".
+--   * video_url: link de YouTube/Vimeo opcional; la página del
+--     proyecto lo muestra embebido entre la reseña y la galería.
+-- ------------------------------------------------------------
+alter table proyectos add column if not exists estado text not null default 'terminada'
+  check (estado in ('terminada','en_proceso'));
+alter table proyectos add column if not exists video_url text;

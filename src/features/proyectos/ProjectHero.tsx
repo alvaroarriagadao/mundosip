@@ -38,7 +38,10 @@ export default function ProjectHero({ proyecto }: { proyecto: Proyecto }) {
         />
         <Box sx={{ position: 'absolute', inset: 'auto 0 0 0', pb: { xs: 10, md: 12 }, color: colors.cream }}>
           <Container>
-            <Eyebrow sx={{ color: colors.tanLight }}>Proyecto · Región de {proyecto.region.nombre}</Eyebrow>
+            <Eyebrow sx={{ color: colors.tanLight }}>
+              Proyecto · Región de {proyecto.region.nombre}
+              {proyecto.estado === 'en_proceso' && ' · En construcción'}
+            </Eyebrow>
             <Typography variant="h1" component="h1" sx={{ mt: 1.5, maxWidth: '16ch' }}>
               {proyecto.nombre}
             </Typography>

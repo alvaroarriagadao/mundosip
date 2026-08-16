@@ -1,11 +1,10 @@
 /**
  * Estructura FIJA de un proyecto construido.
  *
- * Este shape es el contrato entre el sitio y el futuro panel de
- * administración (fase 2, Payload CMS): cada campo de esta interfaz
- * será un campo del formulario que llena el equipo no técnico.
- * Agregar un proyecto nuevo = llenar estos campos + subir fotos.
- * Nunca requiere tocar código.
+ * Este shape es el contrato entre el sitio y el panel /admin/proyectos:
+ * cada campo de esta interfaz es un campo del formulario que llena el
+ * equipo no técnico. Agregar un proyecto nuevo = llenar estos campos +
+ * subir fotos. Nunca requiere tocar código.
  */
 
 export interface ImagenProyecto {
@@ -19,6 +18,9 @@ export interface RegionProyecto {
   /** Para mostrar: "Los Ríos" */
   nombre: string;
 }
+
+/** Obra entregada, o todavía en construcción (lleva etiqueta en el sitio) */
+export type EstadoProyecto = 'terminada' | 'en_proceso';
 
 export interface Proyecto {
   id: string;
@@ -43,6 +45,11 @@ export interface Proyecto {
   imagenResena: ImagenProyecto;
   /** Mosaico + lightbox (3 a 12 imágenes) */
   galeria: ImagenProyecto[];
+  /** Link de YouTube/Vimeo opcional; se embebe en la página del proyecto */
+  videoUrl: string | null;
+  estado: EstadoProyecto;
   destacado: boolean;
+  /** false = borrador: solo visible desde el panel con "Previsualizar" */
+  publicado: boolean;
   orden: number;
 }

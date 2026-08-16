@@ -8,31 +8,8 @@ import { useRef, useState } from 'react';
 import type { ImagenModelo } from '@/features/modelos/modelo.types';
 import { colors, motionTokens, radii } from '@/theme/tokens';
 
+import { prepararFoto } from './fotos';
 import { inputSx } from './ui';
-
-/** Los renders son horizontales: se guardan anchos, no cuadrados */
-const ANCHO_MAX = 1600;
-const CALIDAD = 0.85;
-
-/** Redimensiona y comprime en el navegador antes de subir */
-async function prepararFoto(archivo: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(archivo);
-  const escala = Math.min(1, ANCHO_MAX / bitmap.width);
-  const ancho = Math.round(bitmap.width * escala);
-  const alto = Math.round(bitmap.height * escala);
-
-  const lienzo = document.createElement('canvas');
-  lienzo.width = ancho;
-  lienzo.height = alto;
-  const ctx = lienzo.getContext('2d');
-  if (!ctx) throw new Error('sin canvas');
-  ctx.drawImage(bitmap, 0, 0, ancho, alto);
-  bitmap.close();
-
-  return new Promise((resolver, rechazar) => {
-    lienzo.toBlob((b) => (b ? resolver(b) : rechazar(new Error('sin blob'))), 'image/webp', CALIDAD);
-  });
-}
 
 interface GaleriaEditableProps {
   portada: ImagenModelo | null;

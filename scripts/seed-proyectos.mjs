@@ -1,16 +1,44 @@
-import type { Proyecto } from '@/features/proyectos/proyecto.types';
+/**
+ * Siembra los 4 proyectos históricos del sitio en Neon.
+ *
+ *   npm run proyectos:seed
+ *
+ * Es el traspaso único de src/data/proyectos.ts (ya eliminado) a la
+ * base de datos. Idempotente: si el slug ya existe, no lo toca — así
+ * nunca pisa lo que el equipo haya editado en /admin/proyectos.
+ */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+import pg from 'pg';
+
+function cargarEnvLocal() {
+  try {
+    const contenido = readFileSync(resolve(process.cwd(), '.env.local'), 'utf8');
+    for (const linea of contenido.split('\n')) {
+      const match = linea.match(/^([A-Z0-9_]+)=(.*)$/);
+      if (match && !process.env[match[1]]) {
+        process.env[match[1]] = match[2].replace(/^["']|["']$/g, '');
+      }
+    }
+  } catch {
+    /* sin .env.local: se espera DATABASE_URL en el entorno */
+  }
+}
+
+cargarEnvLocal();
+
+const url = process.env.DATABASE_URL;
+if (!url) {
+  console.error('Falta DATABASE_URL (en .env.local o el entorno).');
+  process.exit(1);
+}
 
 const LOS_RIOS = { slug: 'los-rios', nombre: 'Los Ríos' };
 const LOS_LAGOS = { slug: 'los-lagos', nombre: 'Los Lagos' };
 
-/**
- * Datos semilla de proyectos construidos.
- * En fase 2 esta lista sale del CMS; el equipo la administra sin código.
- * Las URLs de imágenes pasarán a ser de Cloudinary.
- */
-export const proyectos: Proyecto[] = [
+const PROYECTOS = [
   {
-    id: 'p-casa-lago-panguipulli',
     slug: 'casa-lago-panguipulli',
     nombre: 'Casa Lago Panguipulli',
     region: LOS_RIOS,
@@ -42,7 +70,6 @@ export const proyectos: Proyecto[] = [
     orden: 1,
   },
   {
-    id: 'p-casa-ladera-ranco',
     slug: 'casa-ladera-ranco',
     nombre: 'Casa Ladera Ranco',
     region: LOS_RIOS,
@@ -74,7 +101,6 @@ export const proyectos: Proyecto[] = [
     orden: 2,
   },
   {
-    id: 'p-refugio-bosque-nativo',
     slug: 'refugio-bosque-nativo',
     nombre: 'Refugio Bosque Nativo',
     region: LOS_LAGOS,
@@ -105,7 +131,6 @@ export const proyectos: Proyecto[] = [
     orden: 3,
   },
   {
-    id: 'p-casa-costa-pacifico',
     slug: 'casa-costa-pacifico',
     nombre: 'Casa Costa Pacífico',
     region: LOS_LAGOS,
@@ -136,3 +161,47 @@ export const proyectos: Proyecto[] = [
     orden: 4,
   },
 ];
+
+const cliente = new pg.Client({ connectionString: url });
+await cliente.connect();
+
+try {
+  for (const p of PROYECTOS) {
+    const existe = await cliente.query('select 1 from proyectos where slug = $1', [p.slug]);
+    if (existe.rowCount > 0) {
+      console.log(`· ${p.slug} ya existe — sin cambios`);
+      continue;
+    }
+
+    const { rows } = await cliente.query(
+      `insert into proyectos
+         (slug, nombre, region_slug, region_nombre, ubicacion, superficie_m2,
+          ano_diseno, ano_construccion, resumen, resena_destacada, resena,
+          destacado, publicado, orden)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,true,$13)
+       returning id`,
+      [
+        p.slug, p.nombre, p.region.slug, p.region.nombre, p.ubicacion, p.superficieM2,
+        p.anoDiseno, p.anoConstruccion, p.resumen, p.resenaDestacada, p.resena,
+        p.destacado, p.orden,
+      ],
+    );
+    const proyectoId = rows[0].id;
+
+    const imagenes = [
+      { ...p.portada, tipo: 'portada', orden: 0 },
+      { ...p.imagenResena, tipo: 'resena', orden: 0 },
+      ...p.galeria.map((g, i) => ({ ...g, tipo: 'galeria', orden: i + 1 })),
+    ];
+    for (const img of imagenes) {
+      await cliente.query(
+        `insert into proyecto_imagenes (proyecto_id, tipo, url, alt, orden)
+         values ($1,$2,$3,$4,$5)`,
+        [proyectoId, img.tipo, img.url, img.alt, img.orden],
+      );
+    }
+    console.log(`✔ ${p.slug} creado con ${imagenes.length} imágenes`);
+  }
+} finally {
+  await cliente.end();
+}

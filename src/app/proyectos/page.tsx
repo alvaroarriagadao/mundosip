@@ -14,6 +14,10 @@ export const metadata: Metadata = {
     'Casas construidas con kits MundoSIP a lo largo de Chile: recorre los proyectos por región y conoce sus características.',
 };
 
+// La galería la edita el equipo en /admin/proyectos: publicar u ocultar
+// una obra debe verse de inmediato, no en el próximo build
+export const dynamic = 'force-dynamic';
+
 export default async function ProyectosPage() {
   const [proyectos, regiones] = await Promise.all([getProyectos(), getRegionesProyectos()]);
 

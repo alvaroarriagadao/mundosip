@@ -2,9 +2,13 @@ import type { Faq } from '@/features/faqs/faq.types';
 import type { Modelo } from '@/features/modelos/modelo.types';
 import { getModeloPorSlug, getModelosPublicados } from '@/features/modelos/modelos.db';
 import type { Proyecto, RegionProyecto } from '@/features/proyectos/proyecto.types';
+import {
+  getProyectoPorSlug,
+  getProyectosPublicados,
+  getRegionesConProyectos,
+} from '@/features/proyectos/proyectos.db';
 
 import { faqs } from './faqs';
-import { proyectos } from './proyectos';
 
 /**
  * ÚNICA capa de acceso a datos del sitio.
@@ -32,19 +36,17 @@ export async function getModeloBySlug(slug: string): Promise<Modelo | undefined>
 // Los paneles ya migraron a la DB (fase CMS propia): ver
 // features/paneles/paneles.db.ts — se administran en /admin/paneles.
 
+// Los proyectos también viven en Neon: se administran en /admin/proyectos.
+
 export async function getProyectos(): Promise<Proyecto[]> {
-  return [...proyectos].sort((a, b) => a.orden - b.orden);
+  return getProyectosPublicados();
 }
 
 export async function getProyectoBySlug(slug: string): Promise<Proyecto | undefined> {
-  return proyectos.find((p) => p.slug === slug);
+  return getProyectoPorSlug(slug);
 }
 
-/** Regiones con al menos un proyecto, para el filtro de la galería */
+/** Regiones con al menos un proyecto publicado, para el filtro de la galería */
 export async function getRegionesProyectos(): Promise<RegionProyecto[]> {
-  const unicas = new Map<string, RegionProyecto>();
-  for (const p of proyectos) {
-    unicas.set(p.region.slug, p.region);
-  }
-  return [...unicas.values()].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  return getRegionesConProyectos();
 }

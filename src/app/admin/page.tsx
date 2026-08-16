@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { ArrowRight, Calculator, House, Layers } from 'lucide-react';
+import { ArrowRight, Calculator, House, Layers, MapPinned } from 'lucide-react';
 
 import Container from '@/components/ui/Container';
 import Eyebrow from '@/components/ui/Eyebrow';
@@ -47,6 +47,14 @@ const SECCIONES = [
     fondo: 'rgba(78, 122, 94, 0.14)',
     titulo: 'Tienda de paneles',
     descripcion: 'Los productos de /paneles: crear, editar precios y fichas, publicar u ocultar, y los pedidos cotizados.',
+  },
+  {
+    href: '/admin/proyectos',
+    icono: <MapPinned size={26} strokeWidth={1.75} />,
+    color: '#A5583A',
+    fondo: 'rgba(165, 88, 58, 0.12)',
+    titulo: 'Proyectos construidos',
+    descripcion: 'Las obras de /proyectos: fotos, textos, región y video. Se previsualizan como borrador antes de publicarlas.',
   },
 ];
 

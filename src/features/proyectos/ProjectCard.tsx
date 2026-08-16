@@ -2,7 +2,7 @@
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, HardHat } from 'lucide-react';
 import Image from 'next/image';
 import NextLink from 'next/link';
 
@@ -54,6 +54,29 @@ export default function ProjectCard({ proyecto, wide = false }: ProjectCardProps
           transition: `opacity 0.4s ${motionTokens.easeCss}`,
         }}
       />
+      {/* Obras en proceso: el visitante lo sabe antes de entrar */}
+      {proyecto.estado === 'en_proceso' && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 18,
+            left: 18,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.6,
+            px: 1.4,
+            py: 0.55,
+            borderRadius: `${radii.pill}px`,
+            bgcolor: colors.tan,
+            color: colors.tealNight,
+            fontSize: '0.76rem',
+            fontWeight: 700,
+            letterSpacing: '0.02em',
+          }}
+        >
+          <HardHat size={13} /> En construcción
+        </Box>
+      )}
       <Box
         className="card-arrow"
         aria-hidden
