@@ -1,6 +1,6 @@
 'use client';
 
-import { upload } from '@vercel/blob/client';
+import { createMultipartUploader, upload } from '@vercel/blob/client';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Check, Clapperboard, Loader2, Trash2, TriangleAlert } from 'lucide-react';
@@ -10,6 +10,89 @@ import { medioVideo } from '@/features/proyectos/video';
 import { colors, motionTokens, radii } from '@/theme/tokens';
 
 import { inputSx } from './ui';
+
+/** Mínimo que exige Vercel Blob por parte (salvo la última) */
+const PARTE_BYTES = 5 * 1024 * 1024;
+const PARTES_EN_PARALELO = 4;
+
+/**
+ * Pide al servidor el token firmado de esta subida.
+ *
+ * Es el mismo contrato que `upload()` usa por dentro contra
+ * `handleUpload`; aquí se hace a mano porque la subida por partes
+ * necesita el token explícito.
+ */
+async function pedirTokenDeSubida(pathname: string): Promise<string> {
+  const respuesta = await fetch('/api/admin/videos', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      type: 'blob.generate-client-token',
+      payload: { pathname, clientPayload: null, multipart: true },
+    }),
+  });
+  const datos = (await respuesta.json().catch(() => null)) as
+    | { clientToken?: string; error?: string }
+    | null;
+  if (!respuesta.ok || !datos?.clientToken) {
+    throw new Error(datos?.error ?? 'No se pudo autorizar la subida.');
+  }
+  return datos.clientToken;
+}
+
+/**
+ * Sube el video en partes y reporta el avance contando las que
+ * terminan.
+ *
+ * NO se usa la opción `onUploadProgress` del SDK a propósito: al
+ * pasarla, el navegador deja de mandar el archivo por su ruta nativa y
+ * pasa a un ReadableStream troceado de 64 KB —unos 320 trozos para 20
+ * MB—, lo que medimos ~50 veces más lento (2 min contra ~3 s). Contando
+ * partes tenemos avance real sin pagar ese precio.
+ */
+async function subirPorPartes(
+  archivo: File,
+  onAvance: (porcentaje: number) => void,
+): Promise<{ url: string }> {
+  // Archivos chicos: una sola petición, no hay nada que trocear
+  if (archivo.size <= PARTE_BYTES) {
+    const blob = await upload(archivo.name, archivo, {
+      access: 'public',
+      handleUploadUrl: '/api/admin/videos',
+      contentType: archivo.type,
+    });
+    onAvance(100);
+    return { url: blob.url };
+  }
+
+  const uploader = await createMultipartUploader(archivo.name, {
+    access: 'public',
+    token: await pedirTokenDeSubida(archivo.name),
+    contentType: archivo.type,
+  });
+
+  const total = Math.ceil(archivo.size / PARTE_BYTES);
+  const partes: Array<{ etag: string; partNumber: number }> = [];
+  let siguiente = 0;
+  let listas = 0;
+
+  async function trabajador() {
+    for (let i = siguiente++; i < total; i = siguiente++) {
+      const trozo = archivo.slice(i * PARTE_BYTES, (i + 1) * PARTE_BYTES);
+      partes.push(await uploader.uploadPart(i + 1, trozo));
+      listas += 1;
+      onAvance(Math.round((listas / total) * 100));
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(PARTES_EN_PARALELO, total) }, trabajador));
+
+  // El servicio exige las partes en orden; con subidas en paralelo
+  // terminan desordenadas
+  partes.sort((a, b) => a.partNumber - b.partNumber);
+  const blob = await uploader.complete(partes);
+  return { url: blob.url };
+}
 
 interface SelectorVideoProps {
   /** URL actual: link de YouTube/Vimeo o archivo ya subido */
@@ -45,13 +128,8 @@ export default function SelectorVideo({ valor, onCambiar }: SelectorVideoProps) 
     setError(null);
     setProgreso(0);
     try {
-      const blob = await upload(archivo.name, archivo, {
-        access: 'public',
-        handleUploadUrl: '/api/admin/videos',
-        multipart: true,
-        onUploadProgress: ({ percentage }) => setProgreso(Math.round(percentage)),
-      });
-      onCambiar(blob.url);
+      const { url } = await subirPorPartes(archivo, setProgreso);
+      onCambiar(url);
     } catch (e) {
       const mensaje = e instanceof Error ? e.message : '';
       setError(
