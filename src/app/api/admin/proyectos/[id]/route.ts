@@ -52,6 +52,7 @@ export async function PUT(request: Request, { params }: Contexto) {
           resena_destacada = ${d.resenaDestacada},
           resena = ${d.resena},
           video_url = ${d.videoUrl},
+          video_en_resena = ${d.videoEnResena},
           estado = ${d.estado},
           destacado = ${d.destacado},
           publicado = ${d.publicado}

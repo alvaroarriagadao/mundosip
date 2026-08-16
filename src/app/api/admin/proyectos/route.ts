@@ -59,12 +59,12 @@ export async function POST(request: Request) {
       insert into proyectos
         (slug, nombre, region_slug, region_nombre, ubicacion, superficie_m2,
          ano_diseno, ano_construccion, resumen, resena_destacada, resena,
-         video_url, estado, destacado, publicado, orden)
+         video_url, video_en_resena, estado, destacado, publicado, orden)
       values
         (${slug}, ${d.nombre}, ${region.slug}, ${region.nombre},
          ${`${d.lugar}, Región de ${region.nombre}`}, ${d.superficieM2},
          ${d.anoDiseno}, ${d.anoConstruccion}, ${d.resumen}, ${d.resenaDestacada},
-         ${d.resena}, ${d.videoUrl}, ${d.estado}, ${d.destacado}, ${d.publicado},
+         ${d.resena}, ${d.videoUrl}, ${d.videoEnResena}, ${d.estado}, ${d.destacado}, ${d.publicado},
          (select coalesce(max(orden), 0) + 1 from proyectos))
       returning id, slug
     `) as Array<{ id: string; slug: string }>;

@@ -87,8 +87,9 @@ export default async function ProyectoPage({ params, searchParams }: ProyectoPag
 
       <ProjectHero proyecto={proyecto} />
       <ProjectResena proyecto={proyecto} />
-      <ProjectVideo nombre={proyecto.nombre} videoUrl={proyecto.videoUrl} />
-      <GalleryMosaic nombre={proyecto.nombre} imagenes={proyecto.galeria} />
+      {/* Si el video ya acompaña la reseña, no se repite como sección propia */}
+      {!proyecto.videoEnResena && <ProjectVideo nombre={proyecto.nombre} videoUrl={proyecto.videoUrl} />}
+      {proyecto.galeria.length > 0 && <GalleryMosaic nombre={proyecto.nombre} imagenes={proyecto.galeria} />}
 
       {/* Cierre: invitación a cotizar */}
       <Section tone="dark" sx={{ py: { xs: 8, md: 11 } }}>

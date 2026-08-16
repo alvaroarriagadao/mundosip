@@ -36,7 +36,7 @@ export default async function FeaturedProjects() {
           <Reveal>
             <Eyebrow>Proyectos</Eyebrow>
             <Typography variant="h2" sx={{ mt: 2, maxWidth: '14ch' }}>
-              Casas que ya se viven.
+              Casas que ya se habitan.
             </Typography>
           </Reveal>
           <Reveal delay={0.1}>

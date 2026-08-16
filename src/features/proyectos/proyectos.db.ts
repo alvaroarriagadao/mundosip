@@ -33,6 +33,7 @@ interface FilaProyecto {
   resena_destacada: string;
   resena: string;
   video_url: string | null;
+  video_en_resena: boolean;
   estado: string;
   destacado: boolean;
   publicado: boolean;
@@ -49,7 +50,7 @@ interface FilaImagen {
 
 const COLUMNAS = `id, slug, nombre, region_slug, region_nombre, ubicacion, superficie_m2,
                   ano_diseno, ano_construccion, resumen, resena_destacada, resena,
-                  video_url, estado, destacado, publicado, orden`;
+                  video_url, video_en_resena, estado, destacado, publicado, orden`;
 
 /** Ensambla los proyectos con sus imágenes en 1 consulta extra, no N+1 */
 async function armar(filas: FilaProyecto[]): Promise<Proyecto[]> {
@@ -91,6 +92,7 @@ async function armar(filas: FilaProyecto[]): Promise<Proyecto[]> {
       },
       galeria: galeria.map((i) => ({ url: i.url, alt: i.alt ?? p.nombre })),
       videoUrl: p.video_url,
+      videoEnResena: p.video_en_resena,
       estado: (p.estado === 'en_proceso' ? 'en_proceso' : 'terminada') as EstadoProyecto,
       destacado: p.destacado,
       publicado: p.publicado,

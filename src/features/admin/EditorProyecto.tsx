@@ -15,6 +15,7 @@ import { colors, radii } from '@/theme/tokens';
 import { BotonGuardar, Seccion, type Estado } from './Bloques';
 import FotoUnica from './FotoUnica';
 import GaleriaFotos from './GaleriaFotos';
+import VistaPreviaProyecto from './VistaPreviaProyecto';
 import { etiquetaSx, inputNumeroSx, inputSx } from './ui';
 
 /**
@@ -35,6 +36,7 @@ export default function EditorProyecto({ proyecto }: { proyecto: Proyecto }) {
   const [anoConstruccion, setAnoConstruccion] = useState(String(proyecto.anoConstruccion));
   const [estadoObra, setEstadoObra] = useState<EstadoProyecto>(proyecto.estado);
   const [videoUrl, setVideoUrl] = useState(proyecto.videoUrl ?? '');
+  const [videoEnResena, setVideoEnResena] = useState(proyecto.videoEnResena);
   const [destacado, setDestacado] = useState(proyecto.destacado);
   const [publicado, setPublicado] = useState(proyecto.publicado);
 
@@ -90,6 +92,7 @@ export default function EditorProyecto({ proyecto }: { proyecto: Proyecto }) {
           resenaDestacada: resenaDestacada.trim(),
           resena: resena.trim(),
           videoUrl: videoUrl.trim(),
+          videoEnResena,
           estado: estadoObra,
           destacado,
           publicado,
@@ -117,6 +120,10 @@ export default function EditorProyecto({ proyecto }: { proyecto: Proyecto }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ portada, imagenResena, galeria }),
       });
+      // El interruptor foto/video de la reseña vive en la ficha: se
+      // persiste junto con las fotos para que no se pierda según qué
+      // botón de guardar use el equipo.
+      if (respuesta.ok && fichaValida) void guardarFicha();
       setEstadoFotos(respuesta.ok ? 'ok' : 'error');
       if (respuesta.ok) setTimeout(() => setEstadoFotos('idle'), 2500);
     } catch {
@@ -125,7 +132,17 @@ export default function EditorProyecto({ proyecto }: { proyecto: Proyecto }) {
   }
 
   return (
-    <Box>
+    // Formulario a la izquierda, maqueta EN VIVO a la derecha (pantallas
+    // grandes): el equipo ve dónde cae cada cosa mientras escribe.
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 360px' },
+        gap: { xs: 0, lg: 3.5 },
+        alignItems: 'start',
+      }}
+    >
+    <Box sx={{ minWidth: 0 }}>
       {/* ── Barra de estado: publicar y previsualizar ── */}
       <Box
         sx={{
@@ -235,7 +252,9 @@ export default function EditorProyecto({ proyecto }: { proyecto: Proyecto }) {
               <option value="en_proceso">En construcción</option>
             </Box>
             <Typography sx={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.5 }}>
-              “En construcción” muestra una etiqueta en el sitio.
+              {estadoObra === 'en_proceso'
+                ? 'Saldrá en “Casas en obra”, con su etiqueta.'
+                : 'Saldrá en “Casas que ya se habitan”.'}
             </Typography>
           </Box>
         </Box>
@@ -291,15 +310,46 @@ export default function EditorProyecto({ proyecto }: { proyecto: Proyecto }) {
             aspecto="16 / 10"
             altPorDefecto={`Fotografía del proyecto ${nombre}`}
           />
-          <FotoUnica
-            valor={imagenResena}
-            onCambiar={setImagenResena}
-            titulo="Foto de la reseña"
-            ayuda="Acompaña los textos de “La casa”. Vertical, ideal 900×1050 px. Si la dejas vacía se reutiliza la portada."
-            aspecto="4 / 4.6"
-            altPorDefecto={`Fotografía del proyecto ${nombre}`}
-            anchoMax={1200}
-          />
+          <Box>
+            {videoEnResena ? (
+              <Box>
+                <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 0.25 }}>Video de la reseña</Typography>
+                <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mb: 1.25 }}>
+                  Acompaña los textos de “La casa” en lugar de la foto. Pega el link de YouTube o Vimeo
+                  tal como lo copias del navegador.
+                </Typography>
+                <Box component="input" value={videoUrl} placeholder="https://www.youtube.com/watch?v=…" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVideoUrl(e.target.value)} sx={inputSx} />
+                {videoUrl.trim() !== '' && (
+                  videoValido ? (
+                    <Typography sx={{ mt: 1, fontSize: '0.82rem', color: colors.teal, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                      <Check size={14} strokeWidth={2.5} /> Video reconocido.
+                    </Typography>
+                  ) : (
+                    <Typography sx={{ mt: 1, fontSize: '0.82rem', color: '#B4472E', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                      <TriangleAlert size={13} /> Ese link no parece de YouTube ni Vimeo.
+                    </Typography>
+                  )
+                )}
+              </Box>
+            ) : (
+              <FotoUnica
+                valor={imagenResena}
+                onCambiar={setImagenResena}
+                titulo="Foto de la reseña"
+                ayuda="Acompaña los textos de “La casa”. Vertical, ideal 900×1050 px. Si la dejas vacía se reutiliza la portada."
+                aspecto="4 / 4.6"
+                altPorDefecto={`Fotografía del proyecto ${nombre}`}
+                anchoMax={1200}
+              />
+            )}
+            <Box sx={{ mt: 1.5 }}>
+              <Toggle
+                activo={videoEnResena}
+                onCambiar={setVideoEnResena}
+                etiqueta={videoEnResena ? 'La reseña lleva video' : 'Usar un video en vez de la foto'}
+              />
+            </Box>
+          </Box>
         </Box>
 
         <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 0.25 }}>Galería</Typography>
@@ -321,25 +371,59 @@ export default function EditorProyecto({ proyecto }: { proyecto: Proyecto }) {
         )}
       </Seccion>
 
-      {/* ── Video ── */}
-      <Seccion
-        titulo="Video (opcional)"
-        descripcion="Pega el link de YouTube o Vimeo tal como lo copias del navegador. Se muestra entre la reseña y la galería."
+      {/* ── Video como sección propia (si no acompaña la reseña) ── */}
+      {!videoEnResena && (
+        <Seccion
+          titulo="Video (opcional)"
+          descripcion="Pega el link de YouTube o Vimeo tal como lo copias del navegador. Se muestra entre la reseña y la galería. (Si prefieres que reemplace la foto de la reseña, actívalo en el bloque de fotos.)"
+        >
+          <Box component="input" value={videoUrl} placeholder="https://www.youtube.com/watch?v=…" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVideoUrl(e.target.value)} sx={inputSx} />
+          {videoUrl.trim() !== '' && (
+            videoValido ? (
+              <Typography sx={{ mt: 1, fontSize: '0.85rem', color: colors.teal, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                <Check size={15} strokeWidth={2.5} /> Video reconocido: se verá en la página.
+              </Typography>
+            ) : (
+              <Typography sx={{ mt: 1, fontSize: '0.85rem', color: '#B4472E', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                <TriangleAlert size={14} /> Ese link no parece de YouTube ni Vimeo.
+              </Typography>
+            )
+          )}
+          <BotonGuardar estado={estadoFicha} onClick={guardarFicha} disabled={!fichaValida} />
+        </Seccion>
+      )}
+    </Box>
+
+      {/* ── Maqueta en vivo (solo pantallas grandes; en el resto está “Previsualizar”) ── */}
+      <Box
+        sx={{
+          display: { xs: 'none', lg: 'block' },
+          position: 'sticky',
+          top: 100,
+          maxHeight: 'calc(100vh - 120px)',
+          overflowY: 'auto',
+        }}
       >
-        <Box component="input" value={videoUrl} placeholder="https://www.youtube.com/watch?v=…" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setVideoUrl(e.target.value)} sx={inputSx} />
-        {videoUrl.trim() !== '' && (
-          videoValido ? (
-            <Typography sx={{ mt: 1, fontSize: '0.85rem', color: colors.teal, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-              <Check size={15} strokeWidth={2.5} /> Video reconocido: se verá en la página.
-            </Typography>
-          ) : (
-            <Typography sx={{ mt: 1, fontSize: '0.85rem', color: '#B4472E', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-              <TriangleAlert size={14} /> Ese link no parece de YouTube ni Vimeo.
-            </Typography>
-          )
-        )}
-        <BotonGuardar estado={estadoFicha} onClick={guardarFicha} disabled={!fichaValida} />
-      </Seccion>
+        <VistaPreviaProyecto
+          datos={{
+            nombre,
+            regionNombre: REGIONES_CHILE.find((r) => r.slug === regionSlug)?.nombre ?? '',
+            lugar,
+            superficie,
+            anoDiseno,
+            anoConstruccion,
+            estadoObra,
+            resumen,
+            resenaDestacada,
+            resena,
+            portada,
+            imagenResena,
+            galeria,
+            videoUrl,
+            videoEnResena,
+          }}
+        />
+      </Box>
     </Box>
   );
 }

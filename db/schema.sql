@@ -383,3 +383,12 @@ create table if not exists imagenes (
 alter table proyectos add column if not exists estado text not null default 'terminada'
   check (estado in ('terminada','en_proceso'));
 alter table proyectos add column if not exists video_url text;
+
+-- ------------------------------------------------------------
+--  MIGRACIÓN 009 — El video puede reemplazar la foto de la reseña
+--
+--  Si video_en_resena es true (y hay video_url), la sección "La casa"
+--  muestra el video embebido en vez de la foto vertical, y la sección
+--  de video propia no se repite más abajo.
+-- ------------------------------------------------------------
+alter table proyectos add column if not exists video_en_resena boolean not null default false;

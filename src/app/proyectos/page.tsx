@@ -36,12 +36,12 @@ export default async function ProyectosPage() {
           <Box>
             <Eyebrow>Proyectos</Eyebrow>
             <Typography variant="h1" component="h1" sx={{ mt: 2, maxWidth: '14ch' }}>
-              Casas que ya se viven.
+              Casas que ya se habitan.
             </Typography>
           </Box>
           <Typography variant="subtitle1" sx={{ color: 'text.secondary', maxWidth: 460, alignSelf: 'end' }}>
             Cada proyecto partió como un kit MundoSIP y hoy es el refugio de una familia. Filtra por
-            región y entra a conocerlos.
+            región, entra a conocerlos y mira más abajo las casas que están en obra.
           </Typography>
         </Box>
 

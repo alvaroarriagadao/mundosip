@@ -130,6 +130,8 @@ export const proyectoSchema = z.object({
     .transform((v) => v || null)
     .nullable()
     .refine((v) => v == null || urlEmbedVideo(v) != null, 'Pega un link de YouTube o Vimeo'),
+  /** true = el video se muestra junto a la reseña, en vez de la foto */
+  videoEnResena: z.boolean(),
   estado: z.enum(['terminada', 'en_proceso']),
   destacado: z.boolean(),
   publicado: z.boolean(),

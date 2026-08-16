@@ -22,6 +22,8 @@ interface CamposNuevo {
   lugar: string;
   superficie: string;
   anoConstruccion: string;
+  /** En qué sección de /proyectos aparece */
+  estado: 'terminada' | 'en_proceso';
 }
 
 /** Alta rápida: solo lo indispensable, nace como borrador */
@@ -33,6 +35,7 @@ function FormNuevoProyecto({ onCreado, onCancelar }: { onCreado: (id: string) =>
     lugar: '',
     superficie: '',
     anoConstruccion: String(anoActual),
+    estado: 'terminada',
   });
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +72,8 @@ function FormNuevoProyecto({ onCreado, onCancelar }: { onCreado: (id: string) =>
           resenaDestacada: '',
           resena: '',
           videoUrl: '',
-          estado: 'terminada',
+          videoEnResena: false,
+          estado: campos.estado,
           destacado: false,
           publicado: false, // nace como borrador: se completa y luego se publica
         }),
@@ -95,7 +99,7 @@ function FormNuevoProyecto({ onCreado, onCancelar }: { onCreado: (id: string) =>
         su editor.
       </Typography>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1.3fr 1.3fr 1fr 1fr' }, gap: 2, mb: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1.3fr 1.3fr 1fr 1fr 1.4fr' }, gap: 2, mb: 2 }}>
         <Box>
           <Typography component="label" sx={etiquetaSx}>
             Nombre *
@@ -131,6 +135,15 @@ function FormNuevoProyecto({ onCreado, onCancelar }: { onCreado: (id: string) =>
             Año construcción *
           </Typography>
           <Box component="input" inputMode="numeric" sx={inputNumeroSx} {...campo('anoConstruccion')} />
+        </Box>
+        <Box>
+          <Typography component="label" sx={etiquetaSx}>
+            ¿En qué sección va?
+          </Typography>
+          <Box component="select" sx={{ ...inputSx, cursor: 'pointer' }} {...campo('estado')}>
+            <option value="terminada">Casas que ya se habitan</option>
+            <option value="en_proceso">Casas en obra</option>
+          </Box>
         </Box>
       </Box>
 
@@ -169,6 +182,7 @@ function FilaProyecto({ proyecto, onCambiado, onEliminado }: { proyecto: Proyect
           resenaDestacada: proyecto.resenaDestacada,
           resena: proyecto.resena,
           videoUrl: proyecto.videoUrl ?? '',
+          videoEnResena: proyecto.videoEnResena,
           estado: proyecto.estado,
           destacado: proyecto.destacado,
           publicado: nuevo,

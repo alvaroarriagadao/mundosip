@@ -47,6 +47,8 @@ export interface Proyecto {
   galeria: ImagenProyecto[];
   /** Link de YouTube/Vimeo opcional; se embebe en la página del proyecto */
   videoUrl: string | null;
+  /** true = el video reemplaza la foto de la reseña (no se repite abajo) */
+  videoEnResena: boolean;
   estado: EstadoProyecto;
   destacado: boolean;
   /** false = borrador: solo visible desde el panel con "Previsualizar" */
