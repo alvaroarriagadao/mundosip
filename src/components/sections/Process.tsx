@@ -62,15 +62,18 @@ export default function Process() {
           }}
         >
           <Reveal>
-            <Eyebrow>Panelizado a medida</Eyebrow>
+            <Eyebrow>Proceso llave en mano</Eyebrow>
             <Typography variant="h2" sx={{ mt: 2, maxWidth: '18ch' }}>
-              ¿Tienes tus planos y quieres construir?
+              Una casa,
+              <Box component="br" />
+              un mismo equipo
             </Typography>
           </Reveal>
           <Reveal delay={0.12}>
-            <Typography variant="subtitle1" sx={{ color: 'rgba(246, 241, 234, 0.75)', maxWidth: 440 }}>
-              Hazlo realidad en cuatro pasos: tú traes el proyecto, nosotros lo convertimos en
-              paneles listos para armar.
+            <Typography variant="subtitle1" sx={{ color: 'rgba(246, 241, 234, 0.75)', maxWidth: 480 }}>
+              Desde las primeras decisiones hasta la entrega, Mundo SIP y Lacustre Construcciones
+              trabajan como un mismo equipo. Proyecto, estructura y construcción se coordinan bajo
+              una sola mirada para que cada etapa funcione como parte de un todo.
             </Typography>
           </Reveal>
         </Box>
