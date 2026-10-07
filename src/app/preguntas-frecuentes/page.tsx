@@ -101,18 +101,18 @@ export default async function PreguntasFrecuentesPage() {
                   position: 'relative',
                   borderRadius: `${radii.lg}px`,
                   overflow: 'hidden',
-                  aspectRatio: { xs: '4 / 3.2', md: '4 / 3.5' },
+                  aspectRatio: { xs: '4 / 5', md: '4 / 4.4' },
                 }}
               >
-                {/* Foto vertical en recuadro casi cuadrado: el encuadre sube para que
-                    el vano de la ventana y el volcán queden sobre la tarjeta de contacto */}
+                {/* Recuadro casi tan alto como la foto (vertical): se ve el vano completo
+                    de la ventana con el volcán, y la tarjeta compacta tapa solo el pasto */}
                 <Image
                   src="/images/faq-ventana.jpg"
                   alt="Paisaje del sur de Chile con volcán visto a través del vano de una ventana en muro de paneles SIP"
                   fill
                   priority
                   sizes="(max-width: 900px) 100vw, 46vw"
-                  style={{ objectFit: 'cover', objectPosition: 'center 38%' }}
+                  style={{ objectFit: 'cover', objectPosition: 'center 42%' }}
                 />
                 <Box
                   aria-hidden
@@ -122,14 +122,17 @@ export default async function PreguntasFrecuentesPage() {
                     background: 'linear-gradient(205deg, rgba(13, 33, 41, 0.02) 42%, rgba(13, 33, 41, 0.72) 100%)',
                   }}
                 />
-                {/* Card de contacto flotante */}
-                <Box sx={{ position: 'absolute', inset: 'auto 0 0 0', p: { xs: 2, md: 2.5 } }}>
+                {/* Card de contacto flotante: compacta y al ancho de su contenido */}
+                <Box sx={{ position: 'absolute', inset: 'auto 0 0 0', p: { xs: 1.5, md: 2 } }}>
                   <Box
                     sx={{
+                      width: 'fit-content',
+                      maxWidth: '100%',
                       bgcolor: 'rgba(246, 241, 234, 0.95)',
                       backdropFilter: 'blur(8px)',
                       borderRadius: `${radii.md}px`,
-                      p: { xs: 2.25, md: 2.75 },
+                      px: { xs: 2, md: 2.25 },
+                      py: { xs: 1.75, md: 2 },
                     }}
                   >
                     <Typography
@@ -137,18 +140,18 @@ export default async function PreguntasFrecuentesPage() {
                       sx={{
                         fontFamily: monoFamily,
                         fontWeight: 700,
-                        fontSize: '0.7rem',
+                        fontSize: '0.66rem',
                         letterSpacing: '0.2em',
                         color: colors.tanDark,
-                        mb: 1,
+                        mb: 0.5,
                       }}
                     >
                       ¿TU DUDA NO ESTÁ AQUÍ?
                     </Typography>
-                    <Typography variant="h5" sx={{ mb: 2, color: 'text.primary' }}>
+                    <Typography variant="h5" sx={{ mb: 1.5, color: 'text.primary', fontSize: { xs: '1.05rem', md: '1.15rem' } }}>
                       Hablemos de tu proyecto.
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                       <Button variant="contained" color="primary" size="small" arrow href="/contacto">
                         Escríbenos
                       </Button>
