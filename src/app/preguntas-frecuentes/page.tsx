@@ -12,6 +12,7 @@ import FaqAccordion from '@/features/faqs/FaqAccordion';
 import { getFaqs } from '@/data/repository';
 import { colors, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
+import { enlaceWhatsApp } from '@/lib/contacto';
 
 export const metadata: Metadata = {
   title: 'Preguntas Frecuentes',
@@ -142,7 +143,7 @@ export default async function PreguntasFrecuentesPage() {
                     <Button
                       variant="outlined"
                       size="small"
-                      href="https://wa.me/56940367867"
+                      href={enlaceWhatsApp('Hola MundoSIP, tengo una pregunta que no está en las preguntas frecuentes.')}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
