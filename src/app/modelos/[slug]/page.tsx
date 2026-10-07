@@ -13,6 +13,8 @@ import ModeloCaracteristicas from '@/features/modelos/ModeloCaracteristicas';
 import ModeloHero from '@/features/modelos/ModeloHero';
 import ModeloKits from '@/features/modelos/ModeloKits';
 import { getModeloPorSlug } from '@/features/modelos/modelos.db';
+import { precioConPromocion, promocionVigente } from '@/features/modelos/precio';
+import { getPromocion } from '@/features/modelos/promocion.db';
 import { formatCLP } from '@/lib/format';
 import { colors, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
@@ -48,9 +50,11 @@ export default async function ModeloPage({ params, searchParams }: ModeloPagePro
   // El borrador solo se revela a alguien con sesión abierta en el panel
   const quierePreview = preview === '1';
   const puedeVerBorradores = quierePreview && (await esAdmin());
-  const modelo = await getModeloPorSlug(slug, puedeVerBorradores);
+  const [modelo, promocion] = await Promise.all([getModeloPorSlug(slug, puedeVerBorradores), getPromocion()]);
 
   if (!modelo) notFound();
+
+  const precioKit = promocionVigente(promocion) ? precioConPromocion(modelo.precioDesdeCLP, promocion) : modelo.precioDesdeCLP;
 
   return (
     <>
@@ -86,7 +90,7 @@ export default async function ModeloPage({ params, searchParams }: ModeloPagePro
         </Box>
       )}
 
-      <ModeloHero modelo={modelo} />
+      <ModeloHero modelo={modelo} promocion={promocion} />
       <ModeloCaracteristicas nombre={modelo.nombre} caracteristicas={modelo.caracteristicas} />
       <ModeloKits modeloSlug={modelo.slug} kitInicial={modelo.kitInicial} kitFullExtras={modelo.kitFullExtras} />
       <GalleryMosaic nombre={modelo.nombre} imagenes={modelo.galeria} titulo="Recorre el modelo." />
@@ -106,7 +110,7 @@ export default async function ModeloPage({ params, searchParams }: ModeloPagePro
                 mb: 1.5,
               }}
             >
-              {modelo.nombre.toUpperCase()} · KIT DESDE {formatCLP(modelo.precioDesdeCLP)}
+              {modelo.nombre.toUpperCase()} · KIT DESDE {formatCLP(precioKit)}
             </Typography>
             <Typography variant="h2" sx={{ mb: 4, mx: 'auto', maxWidth: '18ch' }}>
               Tu {modelo.nombre} puede estar en obra en semanas.

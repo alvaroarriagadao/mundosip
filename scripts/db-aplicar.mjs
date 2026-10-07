@@ -11,18 +11,20 @@ import { resolve } from 'node:path';
 
 import pg from 'pg';
 
-// .env.local a mano: sin dependencia de dotenv
+// .env y .env.local a mano: sin dependencia de dotenv. Los secretos del
+// proyecto viven en .env (el CLI de Vercel reescribe .env.local).
 function cargarEnvLocal() {
-  try {
-    const contenido = readFileSync(resolve(process.cwd(), '.env.local'), 'utf8');
-    for (const linea of contenido.split('\n')) {
-      const match = linea.match(/^([A-Z0-9_]+)=(.*)$/);
-      if (match && !process.env[match[1]]) {
-        process.env[match[1]] = match[2].replace(/^["']|["']$/g, '');
+  for (const archivo of ['.env', '.env.local']) {
+    try {
+      const contenido = readFileSync(resolve(process.cwd(), archivo), 'utf8');
+      for (const linea of contenido.split('\n')) {
+        const match = linea.match(/^([A-Z0-9_]+)=(.*)$/);
+        const valor = match?.[2].replace(/^["']|["']$/g, '');
+        if (match && valor && !process.env[match[1]]) process.env[match[1]] = valor;
       }
+    } catch {
+      /* archivo ausente: se sigue con el siguiente o con el entorno */
     }
-  } catch {
-    /* sin .env.local: se espera DATABASE_URL en el entorno */
   }
 }
 

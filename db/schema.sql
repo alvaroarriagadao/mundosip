@@ -392,3 +392,20 @@ alter table proyectos add column if not exists video_url text;
 --  de video propia no se repite más abajo.
 -- ------------------------------------------------------------
 alter table proyectos add column if not exists video_en_resena boolean not null default false;
+
+-- ------------------------------------------------------------
+--  MIGRACIÓN 010 — Promoción vigente (descuento global)
+--
+--  Un solo descuento para todos los modelos ("Descuento primavera 3%"):
+--  el listado y la ficha muestran el precio tachado y el rebajado.
+--  Fila única (id = 1). Desde el panel se puede además copiar el mismo
+--  descuento a todas las plantillas de cotización.
+-- ------------------------------------------------------------
+create table if not exists promocion (
+  id             integer primary key default 1 check (id = 1),
+  nombre         text not null default '',
+  descuento_pct  numeric(5,2) not null default 0 check (descuento_pct >= 0 and descuento_pct < 100),
+  activa         boolean not null default false,
+  updated_at     timestamptz not null default now()
+);
+insert into promocion (id) values (1) on conflict (id) do nothing;

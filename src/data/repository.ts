@@ -1,6 +1,8 @@
 import type { Faq } from '@/features/faqs/faq.types';
 import type { Modelo } from '@/features/modelos/modelo.types';
 import { getModeloPorSlug, getModelosPublicados } from '@/features/modelos/modelos.db';
+import type { Promocion } from '@/features/modelos/precio';
+import { getPromocion as getPromocionDb } from '@/features/modelos/promocion.db';
 import type { Proyecto, RegionProyecto } from '@/features/proyectos/proyecto.types';
 import {
   getProyectoPorSlug,
@@ -27,6 +29,11 @@ export async function getFaqs(): Promise<Faq[]> {
 
 export async function getModelos(): Promise<Modelo[]> {
   return getModelosPublicados();
+}
+
+/** Descuento global vigente para mostrar precios rebajados */
+export async function getPromocion(): Promise<Promocion> {
+  return getPromocionDb();
 }
 
 export async function getModeloBySlug(slug: string): Promise<Modelo | undefined> {

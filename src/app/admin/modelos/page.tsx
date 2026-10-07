@@ -7,9 +7,11 @@ import Container from '@/components/ui/Container';
 import Eyebrow from '@/components/ui/Eyebrow';
 import Section from '@/components/ui/Section';
 import BotonSalir from '@/features/admin/BotonSalir';
+import EditorPromocion from '@/features/admin/EditorPromocion';
 import ListadoModelos from '@/features/admin/ListadoModelos';
 import { exigirAdmin } from '@/features/admin/auth';
 import { getModelosAdmin } from '@/features/modelos/modelos.db';
+import { getPromocion } from '@/features/modelos/promocion.db';
 import { colors } from '@/theme/tokens';
 
 export const metadata: Metadata = {
@@ -22,7 +24,7 @@ export const dynamic = 'force-dynamic';
 /** Catálogo de modelos de casa: crear, publicar y editar. */
 export default async function AdminModelosPage() {
   await exigirAdmin();
-  const modelos = await getModelosAdmin();
+  const [modelos, promocion] = await Promise.all([getModelosAdmin(), getPromocion()]);
 
   return (
     <Section tone="paper" belowHeader>
@@ -54,6 +56,8 @@ export default async function AdminModelosPage() {
           </Box>
           <BotonSalir />
         </Box>
+
+        <EditorPromocion inicial={promocion} />
 
         <ListadoModelos modelos={modelos} />
       </Container>

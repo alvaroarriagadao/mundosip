@@ -58,7 +58,7 @@ export default function Stats() {
                 mb: 2,
               }}
             >
-              Y la nuestra se construye en terreno.
+              y la nuestra se construye en terreno.
             </Typography>
             <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 520 }}>
               Fabricamos algo que conocemos desde su origen hasta su comportamiento en terreno.

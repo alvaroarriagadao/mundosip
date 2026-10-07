@@ -8,7 +8,7 @@ import Eyebrow from '@/components/ui/Eyebrow';
 import Reveal from '@/components/ui/Reveal';
 import Section from '@/components/ui/Section';
 import ModeloCard from '@/features/modelos/ModeloCard';
-import { getModelos } from '@/data/repository';
+import { getModelos, getPromocion } from '@/data/repository';
 import { layout } from '@/theme/tokens';
 
 // El catálogo lo edita el equipo en /admin/modelos: publicar u ocultar
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ModelosPage() {
-  const modelos = await getModelos();
+  const [modelos, promocion] = await Promise.all([getModelos(), getPromocion()]);
 
   return (
     <Section tone="paper" belowHeader sx={{ position: 'relative', overflow: 'hidden' }}>
@@ -83,8 +83,11 @@ export default async function ModelosPage() {
           }}
         >
           {modelos.map((modelo, i) => (
-            <Reveal key={modelo.slug} delay={i * 0.1}>
-              <ModeloCard modelo={modelo} />
+            // El escalonado se reinicia por fila y la card aparece apenas
+            // asoma: con cards altas, esperar al 25 % visible + 0,5 s de
+            // retardo acumulado dejaba la segunda fila en blanco al bajar
+            <Reveal key={modelo.slug} delay={(i % 3) * 0.08} amount={0.08} margin="0px" y={20}>
+              <ModeloCard modelo={modelo} promocion={promocion} />
             </Reveal>
           ))}
         </Box>

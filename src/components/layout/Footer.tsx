@@ -80,8 +80,9 @@ export default function Footer() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 340 }}>
             <Logo variant="light" height={46} />
             <Typography sx={{ color: 'rgba(246, 241, 234, 0.75)', fontSize: '1rem', lineHeight: 1.65 }}>
-              Casas en paneles SIP diseñadas en Chile: kits de autoconstrucción, venta de paneles y
-              panelizado a medida.
+              Casas en paneles SIP diseñadas en Chile.
+              <br />
+              Kits de autoconstrucción, venta de paneles y panelizado a medida.
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, ml: -1 }}>
               <IconButton

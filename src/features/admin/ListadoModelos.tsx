@@ -3,7 +3,7 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Eye, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Eye, GripVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import Button from '@/components/ui/Button';
@@ -137,7 +137,17 @@ function FormNuevoModelo({ onCreado, onCancelar }: { onCreado: (id: string) => v
 }
 
 /** Fila de modelo con su estado y acciones */
-function FilaModelo({ modelo, onCambiado, onEliminado }: { modelo: Modelo; onCambiado: (m: Modelo) => void; onEliminado: () => void }) {
+interface FilaModeloProps {
+  modelo: Modelo;
+  posicion: number;
+  total: number;
+  onCambiado: (m: Modelo) => void;
+  onEliminado: () => void;
+  /** Subir (-1) o bajar (+1) una posición en el catálogo */
+  onMover: (delta: -1 | 1) => void;
+}
+
+function FilaModelo({ modelo, posicion, total, onCambiado, onEliminado, onMover }: FilaModeloProps) {
   const [ocupado, setOcupado] = useState(false);
 
   /** Publicar/ocultar sin abrir el editor: manda la ficha completa */
@@ -208,8 +218,15 @@ function FilaModelo({ modelo, onCambiado, onEliminado }: { modelo: Modelo; onCam
         },
       }}
     >
-      <Box sx={{ gridArea: 'foto', width: 64, height: 48, borderRadius: `${radii.sm}px`, bgcolor: '#FBF9F5', border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
-        <Box component="img" src={modelo.portada.url} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      <Box sx={{ gridArea: 'foto', display: 'flex', alignItems: 'center', gap: 1 }}>
+        {/* Asa de arrastre + número de posición: la fila se puede arrastrar entera */}
+        <Box aria-hidden sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', alignItems: 'center', color: colors.muted, width: 22 }}>
+          <GripVertical size={16} />
+          <Typography sx={{ fontFamily: monoFamily, fontSize: '0.7rem', fontWeight: 700 }}>{posicion}</Typography>
+        </Box>
+        <Box sx={{ width: 64, height: 48, borderRadius: `${radii.sm}px`, bgcolor: '#FBF9F5', border: '1px solid', borderColor: 'divider', overflow: 'hidden', flexShrink: 0 }}>
+          <Box component="img" src={modelo.portada.url} alt="" draggable={false} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </Box>
       </Box>
 
       <Box sx={{ gridArea: 'datos', minWidth: 0 }}>
@@ -235,6 +252,12 @@ function FilaModelo({ modelo, onCambiado, onEliminado }: { modelo: Modelo; onCam
       </Box>
 
       <Box sx={{ gridArea: 'acciones', display: 'flex', gap: 0.5, justifySelf: 'end' }}>
+        <Box component="button" type="button" onClick={() => onMover(-1)} disabled={posicion === 1} aria-label={`Subir ${modelo.nombre}`} title="Subir en el catálogo" sx={{ ...iconoSx, '&:hover': { color: colors.teal }, '&:disabled': { opacity: 0.3, cursor: 'default' } }}>
+          <ChevronUp size={16} />
+        </Box>
+        <Box component="button" type="button" onClick={() => onMover(1)} disabled={posicion === total} aria-label={`Bajar ${modelo.nombre}`} title="Bajar en el catálogo" sx={{ ...iconoSx, '&:hover': { color: colors.teal }, '&:disabled': { opacity: 0.3, cursor: 'default' } }}>
+          <ChevronDown size={16} />
+        </Box>
         <Box
           component="a"
           href={`/modelos/${modelo.slug}${modelo.publicado ? '' : '?preview=1'}`}
@@ -271,7 +294,35 @@ function FilaModelo({ modelo, onCambiado, onEliminado }: { modelo: Modelo; onCam
 export default function ListadoModelos({ modelos }: { modelos: Modelo[] }) {
   const [lista, setLista] = useState<Modelo[]>(modelos);
   const [creando, setCreando] = useState(false);
+  const [arrastrando, setArrastrando] = useState<number | null>(null);
+  const [destino, setDestino] = useState<number | null>(null);
+  const [estadoOrden, setEstadoOrden] = useState<'idle' | 'guardando' | 'ok' | 'error'>('idle');
   const publicados = lista.filter((m) => m.publicado).length;
+
+  /**
+   * Mueve un modelo y guarda el orden al tiro: la posición en esta lista
+   * es la posición en /modelos (1 = arriba a la izquierda). Se guarda sin
+   * botón porque arrastrar y después tener que "guardar" se olvida.
+   */
+  async function reordenar(desde: number, hasta: number) {
+    if (desde === hasta || hasta < 0 || hasta >= lista.length) return;
+    const copia = [...lista];
+    const [movido] = copia.splice(desde, 1);
+    copia.splice(hasta, 0, movido);
+    setLista(copia);
+    setEstadoOrden('guardando');
+    try {
+      const respuesta = await fetch('/api/admin/modelos/orden', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: copia.map((m) => m.id) }),
+      });
+      setEstadoOrden(respuesta.ok ? 'ok' : 'error');
+      if (respuesta.ok) setTimeout(() => setEstadoOrden('idle'), 2000);
+    } catch {
+      setEstadoOrden('error');
+    }
+  }
 
   return (
     <Box>
@@ -280,10 +331,16 @@ export default function ListadoModelos({ modelos }: { modelos: Modelo[] }) {
           Agregar un modelo
         </Button>
         <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', ml: { md: 'auto' } }}>
+          {estadoOrden === 'guardando' && 'Guardando orden… · '}
+          {estadoOrden === 'ok' && <Box component="span" sx={{ color: colors.teal, fontWeight: 600 }}>Orden guardado · </Box>}
+          {estadoOrden === 'error' && <Box component="span" sx={{ color: '#B4472E', fontWeight: 600 }}>No se pudo guardar el orden · </Box>}
           {lista.length} modelos · {publicados} publicados
           {lista.length - publicados > 0 ? ` · ${lista.length - publicados} en borrador` : ''}
         </Typography>
       </Box>
+      <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mb: 1.5, mt: -1.5 }}>
+        El orden de esta lista es el orden en /modelos: arrastra una fila o usa las flechas. Se guarda solo.
+      </Typography>
 
       <AnimatePresence initial={false}>
         {creando && (
@@ -306,13 +363,50 @@ export default function ListadoModelos({ modelos }: { modelos: Modelo[] }) {
       </AnimatePresence>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        {lista.map((modelo) => (
-          <FilaModelo
+        {lista.map((modelo, i) => (
+          <Box
             key={modelo.id}
-            modelo={modelo}
-            onCambiado={(m) => setLista((prev) => prev.map((x) => (x.id === m.id ? m : x)))}
-            onEliminado={() => setLista((prev) => prev.filter((x) => x.id !== modelo.id))}
-          />
+            draggable
+            onDragStart={(e: React.DragEvent) => {
+              e.dataTransfer.effectAllowed = 'move';
+              setArrastrando(i);
+            }}
+            onDragEnd={() => {
+              setArrastrando(null);
+              setDestino(null);
+            }}
+            onDragOver={(e: React.DragEvent) => {
+              if (arrastrando == null) return;
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'move';
+              if (destino !== i) setDestino(i);
+            }}
+            onDrop={(e: React.DragEvent) => {
+              if (arrastrando == null) return;
+              e.preventDefault();
+              void reordenar(arrastrando, i);
+              setArrastrando(null);
+              setDestino(null);
+            }}
+            sx={{
+              cursor: 'grab',
+              opacity: arrastrando === i ? 0.45 : 1,
+              outline: destino === i && arrastrando !== i ? `2px solid ${colors.teal}` : 'none',
+              outlineOffset: 2,
+              borderRadius: `${radii.md}px`,
+              transition: `opacity 0.15s ${motionTokens.easeCss}`,
+              '&:active': { cursor: 'grabbing' },
+            }}
+          >
+            <FilaModelo
+              modelo={modelo}
+              posicion={i + 1}
+              total={lista.length}
+              onCambiado={(m) => setLista((prev) => prev.map((x) => (x.id === m.id ? m : x)))}
+              onEliminado={() => setLista((prev) => prev.filter((x) => x.id !== modelo.id))}
+              onMover={(delta) => void reordenar(i, i + delta)}
+            />
+          </Box>
         ))}
         {lista.length === 0 && (
           <Typography sx={{ color: 'text.secondary', py: 3, display: 'inline-flex', alignItems: 'center', gap: 1 }}>

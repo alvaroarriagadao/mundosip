@@ -147,6 +147,20 @@ export const proyectoImagenesSchema = z.object({
 export type ProyectoInput = z.infer<typeof proyectoSchema>;
 export type ProyectoImagenesInput = z.infer<typeof proyectoImagenesSchema>;
 
+/** Promoción global del catálogo (/admin/modelos) */
+export const promocionSchema = z.object({
+  nombre: z.string().trim().max(60, 'Nombre muy largo'),
+  descuentoPct: z.number().min(0).max(99.99, 'Revisa el porcentaje'),
+  activa: z.boolean(),
+  /** Copiar el mismo descuento a todas las plantillas de cotización */
+  aplicarACotizaciones: z.boolean(),
+});
+
+/** Orden del catálogo: todos los ids, en la posición en que deben salir */
+export const ordenModelosSchema = z.object({
+  ids: z.array(z.uuid()).min(1).max(200),
+});
+
 export type ModeloInput = z.infer<typeof modeloSchema>;
 export type ModeloListasInput = z.infer<typeof modeloListasSchema>;
 export type ModeloImagenesInput = z.infer<typeof modeloImagenesSchema>;

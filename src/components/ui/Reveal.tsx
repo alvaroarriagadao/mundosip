@@ -14,11 +14,15 @@ interface RevealProps {
   /** Desplazamiento horizontal inicial en px (negativo = entra desde la izquierda) */
   x?: number;
   once?: boolean;
+  /** Fracción del elemento que debe verse para disparar (0–1). Bajarla en cards altas. */
+  amount?: number;
+  /** Margen del viewport para el observer; '0px' dispara apenas asoma */
+  margin?: string;
   style?: React.CSSProperties;
 }
 
 /** Fade + translate al entrar en viewport; inerte con prefers-reduced-motion */
-export default function Reveal({ children, delay = 0, y = 28, x = 0, once = true, style }: RevealProps) {
+export default function Reveal({ children, delay = 0, y = 28, x = 0, once = true, amount = 0.25, margin = '0px 0px -8% 0px', style }: RevealProps) {
   const reduced = useReducedMotion();
 
   if (reduced) {
@@ -29,7 +33,7 @@ export default function Reveal({ children, delay = 0, y = 28, x = 0, once = true
     <motion.div
       initial={{ opacity: 0, y, x }}
       whileInView={{ opacity: 1, y: 0, x: 0 }}
-      viewport={{ once, amount: 0.25, margin: '0px 0px -8% 0px' }}
+      viewport={{ once, amount, margin }}
       transition={{ duration: 0.8, ease: EASE, delay }}
       style={style}
     >

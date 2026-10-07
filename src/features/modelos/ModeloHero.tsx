@@ -11,10 +11,11 @@ import { useCallback, useEffect, useState } from 'react';
 import Button from '@/components/ui/Button';
 import Container from '@/components/ui/Container';
 import Eyebrow from '@/components/ui/Eyebrow';
-import { formatCLP } from '@/lib/format';
 import type { Modelo } from '@/features/modelos/modelo.types';
+import PrecioKit from '@/features/modelos/PrecioKit';
+import type { Promocion } from '@/features/modelos/precio';
 import { colors, layout, motionTokens, radii } from '@/theme/tokens';
-import { displayFamily, monoFamily } from '@/theme/typography';
+import { monoFamily } from '@/theme/typography';
 
 function SpecChip({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
@@ -43,7 +44,7 @@ function SpecChip({ icon, label }: { icon: React.ReactNode; label: string }) {
  * Hero de la ficha de modelo: carrusel de renders + panel de compra.
  * Toda la información llega del repositorio; nada hardcodeado.
  */
-export default function ModeloHero({ modelo }: { modelo: Modelo }) {
+export default function ModeloHero({ modelo, promocion }: { modelo: Modelo; promocion?: Promocion | null }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selected, setSelected] = useState(0);
 
@@ -192,19 +193,9 @@ export default function ModeloHero({ modelo }: { modelo: Modelo }) {
                 >
                   KIT AUTOCONSTRUCCIÓN · DESDE
                 </Typography>
-                <Typography
-                  component="p"
-                  sx={{
-                    fontFamily: displayFamily,
-                    fontWeight: 800,
-                    fontSize: 'clamp(2.2rem, 4vw, 2.9rem)',
-                    lineHeight: 1,
-                    letterSpacing: '-0.01em',
-                    mb: 1.5,
-                  }}
-                >
-                  {formatCLP(modelo.precioDesdeCLP)}
-                </Typography>
+                <Box sx={{ mb: 1.5 }}>
+                  <PrecioKit precio={modelo.precioDesdeCLP} promocion={promocion} variante="hero" />
+                </Box>
                 <Typography sx={{ fontSize: '0.95rem', color: 'rgba(246, 241, 234, 0.75)', mb: 3 }}>
                   Incluye planos, paneles dimensionados, fijaciones y capacitación en terreno.
                 </Typography>

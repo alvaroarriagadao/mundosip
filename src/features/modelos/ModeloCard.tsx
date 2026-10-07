@@ -6,8 +6,9 @@ import { ArrowUpRight, Bath, BedDouble, Ruler } from 'lucide-react';
 import Image from 'next/image';
 import NextLink from 'next/link';
 
-import { formatCLP } from '@/lib/format';
 import type { Modelo } from '@/features/modelos/modelo.types';
+import PrecioKit from '@/features/modelos/PrecioKit';
+import type { Promocion } from '@/features/modelos/precio';
 import { colors, motionTokens, radii } from '@/theme/tokens';
 import { displayFamily, monoFamily } from '@/theme/typography';
 
@@ -24,7 +25,7 @@ function Spec({ icon, label }: { icon: React.ReactNode; label: string }) {
 }
 
 /** Card de modelo para el listado: render + specs + precio como oferta */
-export default function ModeloCard({ modelo }: { modelo: Modelo }) {
+export default function ModeloCard({ modelo, promocion }: { modelo: Modelo; promocion?: Promocion | null }) {
   return (
     <Box
       component={NextLink}
@@ -129,7 +130,8 @@ export default function ModeloCard({ modelo }: { modelo: Modelo }) {
             borderColor: 'divider',
             pt: 2.5,
             display: 'flex',
-            alignItems: 'center',
+            flexWrap: 'wrap',
+            alignItems: 'flex-end',
             justifyContent: 'space-between',
             gap: 2,
           }}
@@ -137,23 +139,11 @@ export default function ModeloCard({ modelo }: { modelo: Modelo }) {
           <Box>
             <Typography
               component="p"
-              sx={{ fontFamily: monoFamily, fontSize: '0.7rem', letterSpacing: '0.2em', color: 'text.secondary', mb: 0.25 }}
+              sx={{ fontFamily: monoFamily, fontSize: '0.7rem', letterSpacing: '0.2em', color: 'text.secondary', mb: 0.75 }}
             >
               KIT DESDE
             </Typography>
-            <Typography
-              component="p"
-              sx={{
-                fontFamily: displayFamily,
-                fontWeight: 800,
-                fontSize: '1.45rem',
-                lineHeight: 1,
-                color: colors.tanDark,
-                letterSpacing: '-0.01em',
-              }}
-            >
-              {formatCLP(modelo.precioDesdeCLP)}
-            </Typography>
+            <PrecioKit precio={modelo.precioDesdeCLP} promocion={promocion} variante="card" />
           </Box>
           <Typography
             component="span"
@@ -164,6 +154,7 @@ export default function ModeloCard({ modelo }: { modelo: Modelo }) {
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               color: 'primary.main',
+              whiteSpace: 'nowrap',
             }}
           >
             Ver modelo →

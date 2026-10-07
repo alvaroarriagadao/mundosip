@@ -130,7 +130,7 @@ export async function getModeloPorSlug(
 export async function getModelosAdmin(): Promise<Modelo[]> {
   const sql = sqlCliente();
   const filas = (await sql.query(
-    `select ${COLUMNAS} from modelos order by orden, nombre`,
+    `select ${COLUMNAS} from modelos order by orden, precio_desde_clp`,
   )) as FilaModelo[];
   return armar(filas);
 }
