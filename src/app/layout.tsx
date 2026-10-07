@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import JsonLd from '@/components/seo/JsonLd';
 import { schemaEmpresa, schemaSitioWeb } from '@/features/seo/schema';
-import { OG_BASE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
+import { OG_BASE, OG_IMAGEN, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
 
 import BotonWhatsApp from '@/components/layout/BotonWhatsApp';
 import Footer from '@/components/layout/Footer';
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
   },
   // Solo el tipo de tarjeta: título y descripción se toman de cada página
-  twitter: { card: 'summary_large_image' },
+  twitter: { card: 'summary_large_image', images: [OG_IMAGEN.url] },
   robots: {
     index: true,
     follow: true,

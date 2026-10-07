@@ -23,7 +23,7 @@ export function schemaEmpresa() {
     alternateName: 'Mundo SIP',
     url: SITE_URL,
     logo: `${SITE_URL}/brand/logo-dark.png`,
-    image: `${SITE_URL}/opengraph-image.jpg`,
+    image: `${SITE_URL}/og/mundosip.jpg`,
     description: SITE_DESCRIPTION,
     email: EMPRESA.email,
     telephone: EMPRESA.telefono,

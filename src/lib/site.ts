@@ -38,7 +38,22 @@ export const EMPRESA = {
  * `openGraph` completo cuando una página define el suyo, así que cada
  * una lo extiende con `...OG_BASE` para no perder sitio e idioma.
  */
-export const OG_BASE = { type: 'website', locale: 'es_CL', siteName: SITE_NAME } as const;
+export const OG_IMAGEN = {
+  // Ruta fija, sin sufijos: WhatsApp cachea por URL y no siempre acepta query strings
+  url: `${SITE_URL}/og/mundosip.jpg`,
+  secureUrl: `${SITE_URL}/og/mundosip.jpg`,
+  width: 1200,
+  height: 630,
+  type: 'image/jpeg',
+  alt: 'MundoSIP: casas en paneles SIP listas para armar. Kits de autoconstrucción, paneles por unidad y panelizado a medida, con despacho a todo Chile.',
+};
+
+export const OG_BASE: { type: 'website'; locale: string; siteName: string; images: (typeof OG_IMAGEN)[] } = {
+  type: 'website',
+  locale: 'es_CL',
+  siteName: SITE_NAME,
+  images: [OG_IMAGEN],
+};
 
 /** URL absoluta a partir de una ruta del sitio o de una URL ya absoluta */
 export function urlAbsoluta(ruta: string): string {
