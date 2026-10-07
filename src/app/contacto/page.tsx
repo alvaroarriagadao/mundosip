@@ -34,9 +34,9 @@ const CANALES = [
   {
     icono: <Mail size={20} strokeWidth={2} />,
     titulo: 'Correo',
-    valor: 'contacto@mundosip.cl',
+    valor: 'contacto.mundosip@gmail.com',
     detalle: 'Para planos y documentos',
-    href: 'mailto:contacto@mundosip.cl',
+    href: 'mailto:contacto.mundosip@gmail.com',
     externo: false,
     destacado: false,
   },

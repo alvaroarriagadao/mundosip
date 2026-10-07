@@ -10,7 +10,7 @@ import { Resend } from 'resend';
  */
 
 /** A dónde llegan los avisos del sitio. Se cambia por env sin tocar código. */
-const DESTINO = process.env.CORREO_AVISOS?.trim() || 'contacto.lacustre@gmail.com';
+const DESTINO = process.env.CORREO_AVISOS?.trim() || 'contacto.mundosip@gmail.com';
 
 /**
  * Remitente. Tiene que ser una dirección del dominio verificado en

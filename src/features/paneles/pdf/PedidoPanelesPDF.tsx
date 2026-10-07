@@ -172,7 +172,7 @@ export default function PedidoPanelesPDF({ pedido }: { pedido: SnapshotPedido })
         </View>
 
         <View style={s.pie} fixed>
-          <Text style={s.pieTexto}>MundoSIP · Arturo Prat 742, Purranque, Los Lagos · contacto@mundosip.cl · +56 9 4036 7867</Text>
+          <Text style={s.pieTexto}>MundoSIP · Arturo Prat 742, Purranque, Los Lagos · contacto.mundosip@gmail.com · +56 9 4036 7867</Text>
           <Text style={s.pieTexto} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
         </View>
       </Page>

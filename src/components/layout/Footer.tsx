@@ -14,7 +14,7 @@ import Logo from './Logo';
 import { navItems } from './nav';
 
 const CONTACTO = {
-  email: 'contacto@mundosip.cl',
+  email: 'contacto.mundosip@gmail.com',
   telefonoDisplay: '+56 9 4036 7867',
   telefonoHref: 'tel:+56940367867',
   whatsapp: 'https://wa.me/56940367867',
