@@ -125,7 +125,7 @@ export default function EditorPromocion({ inicial }: { inicial: Promocion }) {
             <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary', textDecoration: 'line-through' }}>{formatCLP(PRECIO_EJEMPLO)}</Typography>
             <Typography sx={{ fontWeight: 800, fontSize: '1.2rem', color: colors.tanDark }}>{formatCLP(precioConPromocion(PRECIO_EJEMPLO, vista))}</Typography>
             <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: colors.tanDark }}>
-              {vista.nombre || 'Descuento'} · -{formatPct(pctNum)}
+              {vista.nombre || 'Descuento'} -{formatPct(pctNum)}
             </Typography>
           </Box>
         ) : (

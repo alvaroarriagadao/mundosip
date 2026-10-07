@@ -52,7 +52,7 @@ export default function PrecioKit({ precio, promocion, variante }: PrecioKitProp
           }}
         >
           <Tag size={hero ? 13 : 12} />
-          {promocion.nombre || 'Descuento'} · -{formatPct(promocion.descuentoPct)}
+          {promocion.nombre || 'Descuento'} -{formatPct(promocion.descuentoPct)}
         </Box>
       )}
 
