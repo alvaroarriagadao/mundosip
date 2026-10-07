@@ -1,8 +1,10 @@
 import { neon } from '@neondatabase/serverless';
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { z } from 'zod';
 
+import { construirAvisoContacto } from '@/features/contacto/avisoEmail';
 import { contactoSchema, INTERESES } from '@/features/contacto/contacto.schema';
+import { enviarAviso } from '@/lib/email';
 
 /** Etiqueta legible del interés, para guardarla junto al mensaje */
 function etiquetaInteres(valor: string): string {
@@ -61,6 +63,15 @@ export async function POST(request: Request) {
     );
   }
 
-  // TODO fase 2: enviar aviso por Resend al equipo comercial.
+  /*
+   * El aviso al equipo sale DESPUÉS de responder: el lead ya está
+   * guardado, así que el visitante no tiene por qué esperar a que
+   * Resend conteste, y si el correo falla igual no se pierde nada.
+   */
+  after(async () => {
+    const { asunto, html, texto } = construirAvisoContacto(parsed.data);
+    await enviarAviso({ asunto, html, texto, responderA: email });
+  });
+
   return NextResponse.json({ ok: true });
 }
