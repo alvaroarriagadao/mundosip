@@ -12,6 +12,7 @@ import PanelesShop from '@/features/paneles/PanelesShop';
 import { getPanelesPublicados } from '@/features/paneles/paneles.db';
 import { colors, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
+import { enlaceWhatsApp } from '@/lib/contacto';
 
 export const metadata: Metadata = {
   title: 'Paneles SIP',
@@ -191,7 +192,7 @@ export default async function PanelesPage() {
                 variant="outlined"
                 size="large"
                 onDark
-                href="https://wa.me/56940367867"
+                href={enlaceWhatsApp('Hola MundoSIP, quiero cotizar paneles SIP.')}
                 target="_blank"
                 rel="noopener noreferrer"
               >

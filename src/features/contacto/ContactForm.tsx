@@ -14,6 +14,7 @@ import { EASE } from '@/lib/motion';
 import { contactoSchema, INTERESES, type ContactoInput } from '@/features/contacto/contacto.schema';
 import { colors, motionTokens, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
+import { enlaceWhatsApp } from '@/lib/contacto';
 
 type Estado = 'idle' | 'enviando' | 'ok' | 'error';
 
@@ -152,7 +153,7 @@ export default function ContactForm() {
             <Button
               variant="contained"
               color="secondary"
-              href="https://wa.me/56940367867"
+              href={enlaceWhatsApp()}
               target="_blank"
               rel="noopener noreferrer"
             >

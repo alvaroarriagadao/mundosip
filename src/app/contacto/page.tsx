@@ -14,6 +14,7 @@ import ContactForm from '@/features/contacto/ContactForm';
 import TelefonoCopiable from '@/features/contacto/TelefonoCopiable';
 import { colors, layout, radii, scrims } from '@/theme/tokens';
 import { displayFamily, monoFamily } from '@/theme/typography';
+import { enlaceWhatsApp } from '@/lib/contacto';
 
 export const metadata: Metadata = {
   title: 'Contacto',
@@ -27,7 +28,7 @@ const CANALES = [
     titulo: 'WhatsApp',
     valor: '+56 9 4036 7867',
     detalle: 'La vía más rápida',
-    href: 'https://wa.me/56940367867',
+    href: enlaceWhatsApp(),
     externo: true,
     destacado: true,
   },

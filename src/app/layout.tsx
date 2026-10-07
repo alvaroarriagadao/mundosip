@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 
+import BotonWhatsApp from '@/components/layout/BotonWhatsApp';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import LenisProvider from '@/components/layout/LenisProvider';
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Header />
           <main>{children}</main>
           <Footer />
+          <BotonWhatsApp />
         </ThemeRegistry>
       </body>
     </html>

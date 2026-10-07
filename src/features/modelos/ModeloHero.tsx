@@ -16,6 +16,7 @@ import PrecioKit from '@/features/modelos/PrecioKit';
 import type { Promocion } from '@/features/modelos/precio';
 import { colors, layout, motionTokens, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
+import { enlaceWhatsApp } from '@/lib/contacto';
 
 function SpecChip({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
@@ -207,7 +208,7 @@ export default function ModeloHero({ modelo, promocion }: { modelo: Modelo; prom
                   <Button
                     variant="outlined"
                     onDark
-                    href="https://wa.me/56940367867"
+                    href={enlaceWhatsApp(`Hola MundoSIP, me interesa el modelo ${modelo.nombre}.`)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

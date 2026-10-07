@@ -9,6 +9,7 @@ import NextLink from 'next/link';
 import Container from '@/components/ui/Container';
 import { colors } from '@/theme/tokens';
 import { displayFamily, monoFamily } from '@/theme/typography';
+import { enlaceWhatsApp } from '@/lib/contacto';
 
 import Logo from './Logo';
 import { navItems } from './nav';
@@ -17,7 +18,7 @@ const CONTACTO = {
   email: 'contacto.mundosip@gmail.com',
   telefonoDisplay: '+56 9 4036 7867',
   telefonoHref: 'tel:+56940367867',
-  whatsapp: 'https://wa.me/56940367867',
+  whatsapp: enlaceWhatsApp(),
   direccion: 'Arturo Prat 742, Purranque, Los Lagos',
   direccionMaps: 'https://maps.google.com/?q=Arturo+Prat+742,+Purranque,+Chile',
   facebook: 'https://www.facebook.com/profile.php?id=61559937455566',
