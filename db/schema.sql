@@ -442,3 +442,9 @@ create table if not exists faqs (
   updated_at  timestamptz not null default now()
 );
 create index if not exists faqs_orden_idx on faqs (orden);
+
+-- OJO: `faqs` ya existía desde el esquema inicial (sin `puntos` y con
+-- `respuesta` obligatoria), así que el create de arriba no hace nada
+-- en esas bases. Estos alter la ponen al día en cualquier caso.
+alter table faqs add column if not exists puntos jsonb not null default '[]'::jsonb;
+alter table faqs alter column respuesta drop not null;

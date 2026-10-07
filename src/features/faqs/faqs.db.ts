@@ -60,6 +60,10 @@ export async function asegurarTablaFaqs() {
       updated_at  timestamptz not null default now()
     )
   `;
+  // La tabla puede venir del esquema inicial, que no tenía `puntos` y
+  // exigía `respuesta`: el create de arriba no la toca, estos sí
+  await sql`alter table faqs add column if not exists puntos jsonb not null default '[]'::jsonb`;
+  await sql`alter table faqs alter column respuesta drop not null`;
   // Una sola sentencia con "where not exists": si dos pestañas abren el
   // admin a la vez, solo una carga las preguntas iniciales
   const iniciales = faqsIniciales.map((f, i) => ({
