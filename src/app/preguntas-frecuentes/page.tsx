@@ -101,7 +101,7 @@ export default async function PreguntasFrecuentesPage() {
                   position: 'relative',
                   borderRadius: `${radii.lg}px`,
                   overflow: 'hidden',
-                  aspectRatio: { xs: '4 / 5', md: '4 / 4.4' },
+                  aspectRatio: { xs: '4 / 4.6', md: '4 / 4' },
                 }}
               >
                 {/* Recuadro casi tan alto como la foto (vertical): se ve el vano completo
@@ -122,12 +122,10 @@ export default async function PreguntasFrecuentesPage() {
                     background: 'linear-gradient(205deg, rgba(13, 33, 41, 0.02) 42%, rgba(13, 33, 41, 0.72) 100%)',
                   }}
                 />
-                {/* Card de contacto flotante: compacta y al ancho de su contenido */}
+                {/* Card de contacto flotante: a todo el ancho, con interior compacto */}
                 <Box sx={{ position: 'absolute', inset: 'auto 0 0 0', p: { xs: 1.5, md: 2 } }}>
                   <Box
                     sx={{
-                      width: 'fit-content',
-                      maxWidth: '100%',
                       bgcolor: 'rgba(246, 241, 234, 0.95)',
                       backdropFilter: 'blur(8px)',
                       borderRadius: `${radii.md}px`,
