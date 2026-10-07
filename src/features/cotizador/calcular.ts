@@ -22,12 +22,18 @@ export function subtotalSeccion(seccion: Pick<SeccionCotizacion, 'items'>): numb
   return seccion.items.reduce((suma, item) => suma + totalItem(item), 0);
 }
 
-/** Secciones que entran a la cotización: las obligatorias + las marcadas. */
+/**
+ * Secciones que entran a la cotización: las obligatorias + las marcadas.
+ * Las obligatorias (el kit de autoconstrucción) van PRIMERO aunque en el
+ * Excel sean la N°13: son la base sobre la que se suma todo lo demás, y
+ * así se leen en el PDF.
+ */
 export function seccionesElegidas(
   plantilla: PlantillaCotizacion,
   idsMarcados: ReadonlySet<string>,
 ): SeccionCotizacion[] {
-  return plantilla.secciones.filter((s) => s.obligatoria || idsMarcados.has(s.id));
+  const elegidas = plantilla.secciones.filter((s) => s.obligatoria || idsMarcados.has(s.id));
+  return [...elegidas.filter((s) => s.obligatoria), ...elegidas.filter((s) => !s.obligatoria)];
 }
 
 export function calcularTotales(

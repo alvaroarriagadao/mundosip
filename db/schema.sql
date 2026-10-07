@@ -409,3 +409,15 @@ create table if not exists promocion (
   updated_at     timestamptz not null default now()
 );
 insert into promocion (id) values (1) on conflict (id) do nothing;
+
+-- ------------------------------------------------------------
+--  MIGRACIÓN 011 — "Tabiquerías" pasa a "Instalación y tabiquerías"
+--
+--  La sección incluye la instalación del panel SIP, y el nombre
+--  viejo no lo decía. Solo cambia la etiqueta en las plantillas;
+--  los folios ya emitidos conservan su snapshot con el nombre de
+--  entonces. Idempotente: si ya se renombró, no toca nada.
+-- ------------------------------------------------------------
+update cotizacion_secciones
+set nombre = 'Instalación y tabiquerías'
+where nombre = 'Tabiquerías';

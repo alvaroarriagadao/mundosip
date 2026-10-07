@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, ChevronDown, FileDown, Loader2, Lock, TriangleAlert } from 'lucide-react';
+import { Check, ChevronDown, FileDown, Loader2, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -151,8 +151,33 @@ function Casilla({
           color: marcada ? colors.cream : 'transparent',
         }}
       >
-        {obligatoria ? <Lock size={13} strokeWidth={2.75} /> : <Check size={17} strokeWidth={3} />}
+        <Check size={17} strokeWidth={3} />
       </Box>
+    </Box>
+  );
+}
+
+/**
+ * Check relleno para lo que va incluido siempre. A propósito NO es una
+ * casilla: no se puede desmarcar, y un candado se leía como "bloqueado"
+ * o "no disponible" en vez de "ya viene con tu cotización".
+ */
+function InsigniaIncluida() {
+  return (
+    <Box
+      aria-hidden
+      sx={{
+        width: 26,
+        height: 26,
+        flexShrink: 0,
+        borderRadius: '50%',
+        display: 'grid',
+        placeItems: 'center',
+        bgcolor: colors.teal,
+        color: colors.cream,
+      }}
+    >
+      <Check size={16} strokeWidth={3} />
     </Box>
   );
 }
@@ -180,10 +205,10 @@ function SeccionCard({
     <Box
       sx={{
         borderRadius: `${radii.md}px`,
-        border: '1px solid',
+        border: seccion.obligatoria ? '2px solid' : '1px solid',
         borderStyle: incluida ? 'solid' : 'dashed',
-        borderColor: incluida ? 'rgba(32, 78, 95, 0.28)' : colors.muted,
-        bgcolor: incluida ? 'background.paper' : 'transparent',
+        borderColor: seccion.obligatoria ? colors.teal : incluida ? 'rgba(32, 78, 95, 0.28)' : colors.muted,
+        bgcolor: seccion.obligatoria ? 'rgba(32, 78, 95, 0.06)' : incluida ? 'background.paper' : 'transparent',
         transition: `all 0.25s ${motionTokens.easeCss}`,
         overflow: 'hidden',
       }}
@@ -191,8 +216,8 @@ function SeccionCard({
       <Box sx={{ display: 'flex', alignItems: 'stretch' }}>
         {/* <label>: clic en cualquier parte de la fila marca/desmarca */}
         <Box
-          component="label"
-          htmlFor={inputId}
+          component={seccion.obligatoria ? 'div' : 'label'}
+          htmlFor={seccion.obligatoria ? undefined : inputId}
           sx={{
             flex: 1,
             minWidth: 0,
@@ -206,7 +231,11 @@ function SeccionCard({
             '&:hover': seccion.obligatoria ? {} : { bgcolor: 'rgba(32, 78, 95, 0.05)' },
           }}
         >
-          <Casilla id={inputId} marcada={incluida} obligatoria={seccion.obligatoria} onChange={onToggle} />
+          {seccion.obligatoria ? (
+            <InsigniaIncluida />
+          ) : (
+            <Casilla id={inputId} marcada={incluida} obligatoria={false} onChange={onToggle} />
+          )}
 
           <Box sx={{ minWidth: 0 }}>
             <Typography
@@ -223,9 +252,12 @@ function SeccionCard({
               {seccion.nombre}
             </Typography>
             <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
-              {seccion.obligatoria
-                ? 'Siempre incluida'
-                : `${seccion.items.length} ${seccion.items.length === 1 ? 'ítem' : 'ítems'}`}
+              {seccion.obligatoria && (
+                <Box component="span" sx={{ color: colors.teal, fontWeight: 700 }}>
+                  Incluido siempre ·{' '}
+                </Box>
+              )}
+              {`${seccion.items.length} ${seccion.items.length === 1 ? 'ítem' : 'ítems'}`}
               {mostrarPrecios && (
                 <Box
                   component="span"
@@ -388,10 +420,13 @@ export default function Cotizador({
     [plantilla, marcadaIds],
   );
   const esCompleta = excluidas.length === 0;
-  const obligatorias = useMemo(
-    () => plantilla.secciones.filter((s) => s.obligatoria).length,
-    [plantilla],
-  );
+
+  /** Lo que va siempre (el kit) y lo que el cliente decide sumar */
+  const base = useMemo(() => plantilla.secciones.filter((s) => s.obligatoria), [plantilla]);
+  const opcionales = useMemo(() => plantilla.secciones.filter((s) => !s.obligatoria), [plantilla]);
+  const nAgregadas = opcionales.filter((s) => marcadaIds.has(s.id)).length;
+  const nombreBase = base.map((s) => s.nombre).join(' + ');
+  const etiquetaServicios = (n: number) => `${n} ${n === 1 ? 'servicio' : 'servicios'}`;
 
   const {
     register,
@@ -422,7 +457,7 @@ export default function Cotizador({
     }));
   }
 
-  /** Vuelve al punto de partida: solo la base estructural */
+  /** Vuelve al punto de partida: solo el kit, sin servicios */
   function soloLaBase() {
     setAgregadas((prev) => ({ ...prev, [plantilla.kit]: new Set<string>() }));
   }
@@ -528,16 +563,48 @@ export default function Cotizador({
 
         <Reveal y={14} delay={0.05}>
           <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary', mb: 3, maxWidth: 640 }}>
-            Tu cotización parte con la base estructural de la casa{' '}
+            {base.length > 0 ? (
+              <>
+                Toda cotización parte con el{' '}
+                <Box component="strong" sx={{ color: 'text.primary' }}>
+                  {nombreBase.toLowerCase()}, que va incluido siempre
+                </Box>{' '}
+              </>
+            ) : (
+              'Tu cotización parte con la base estructural de la casa '
+            )}
             {plantilla.kit === 'full'
-              ? 'con piso de panel SIP sobre apoyos de hormigón.'
-              : 'sobre radier de hormigón, porque el Kit Inicial no trae piso.'}{' '}
+              ? '(con piso de panel SIP sobre apoyos de hormigón).'
+              : '(sobre radier de hormigón: el Kit Inicial no trae piso).'}{' '}
             <Box component="strong" sx={{ color: 'text.primary' }}>
-              Desde ahí, agrega todo lo que quieras que hagamos por ti
+              Desde ahí, suma los servicios que quieras que hagamos por ti
             </Box>{' '}
-            — revestimientos, instalaciones, terminaciones — y llega hasta donde tú decidas.
+            — instalación, revestimientos, terminaciones — y llega hasta donde tú decidas.
           </Typography>
         </Reveal>
+
+        {/* La base, separada y arriba: es lo primero que tiene que quedar
+            claro. Antes iba al final de la grilla y nadie la veía. */}
+        {base.length > 0 && (
+          <Reveal y={12} delay={0.07}>
+            <Box sx={{ mb: 4 }}>
+              <Typography sx={{ ...kickerSx, fontSize: '0.7rem', color: colors.teal, mb: 1.25 }}>
+                Incluido en tu cotización
+              </Typography>
+              <Box sx={{ display: 'grid', gap: 1.25 }}>
+                {base.map((seccion) => (
+                  <SeccionCard
+                    key={seccion.id}
+                    seccion={seccion}
+                    incluida
+                    mostrarPrecios={mostrarPrecios}
+                    onToggle={() => {}}
+                  />
+                ))}
+              </Box>
+            </Box>
+          </Reveal>
+        )}
 
         {/* Barra de selección: instrucción explícita + contador + acciones
             masivas. Es la señal más clara de que la lista de abajo se marca. */}
@@ -557,10 +624,10 @@ export default function Cotizador({
           >
             <Box>
               <Typography sx={{ fontWeight: 700, fontSize: '1.02rem', lineHeight: 1.3 }}>
-                Selecciona los ítems que deseas agregar a la cotización
+                Servicios adicionales: marca los que quieres sumar
               </Typography>
               <Typography sx={{ ...kickerSx, fontSize: '0.7rem', color: colors.tanDark, mt: 0.6 }}>
-                {elegidas.length} de {plantilla.secciones.length} secciones seleccionadas
+                {nAgregadas} de {opcionales.length} servicios agregados
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -571,16 +638,16 @@ export default function Cotizador({
                 disabled={esCompleta}
                 sx={accionMasivaSx}
               >
-                Seleccionar todos
+                Agregar todos
               </Box>
               <Box
                 component="button"
                 type="button"
                 onClick={soloLaBase}
-                disabled={elegidas.length === obligatorias}
+                disabled={nAgregadas === 0}
                 sx={accionMasivaSx}
               >
-                Solo la base
+                {base.length > 0 ? 'Solo el kit' : 'Quitar todos'}
               </Box>
             </Box>
           </Box>
@@ -595,11 +662,11 @@ export default function Cotizador({
             alignItems: 'start',
           }}
         >
-          {plantilla.secciones.map((seccion, i) => (
+          {opcionales.map((seccion, i) => (
             <Reveal key={seccion.id} y={16} delay={Math.min(i * 0.03, 0.24)}>
               <SeccionCard
                 seccion={seccion}
-                incluida={seccion.obligatoria || marcadaIds.has(seccion.id)}
+                incluida={marcadaIds.has(seccion.id)}
                 mostrarPrecios={mostrarPrecios}
                 onToggle={() => toggleSeccion(seccion.id)}
               />
@@ -645,6 +712,17 @@ export default function Cotizador({
                 {modeloNombre} · {KIT_LABEL[plantilla.kit]}
               </Typography>
 
+              {base.length > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                  <Box sx={{ width: 20, height: 20, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: colors.tan, color: colors.tealNight, flexShrink: 0 }}>
+                    <Check size={13} strokeWidth={3} />
+                  </Box>
+                  <Typography sx={{ fontSize: '0.9rem' }}>
+                    {nombreBase} <Box component="span" sx={{ color: 'rgba(246, 241, 234, 0.6)' }}>· incluido</Box>
+                  </Typography>
+                </Box>
+              )}
+
               {/* Alcance: solo es "llave en mano" si va todo */}
               <Box
                 sx={{
@@ -663,15 +741,19 @@ export default function Cotizador({
                   component="span"
                   sx={{ ...kickerSx, fontSize: '0.62rem', letterSpacing: '0.14em', color: esCompleta ? colors.tanLight : 'rgba(246, 241, 234, 0.75)' }}
                 >
-                  {esCompleta ? 'Llave en mano completa' : `Alcance a tu medida · ${elegidas.length} de ${plantilla.secciones.length} secciones`}
+                  {esCompleta
+                    ? 'Llave en mano completa'
+                    : nAgregadas === 0
+                      ? 'Solo el kit · sin servicios'
+                      : `Kit + ${etiquetaServicios(nAgregadas)}`}
                 </Typography>
               </Box>
 
               {/* En el mínimo invita a sumar; ya avanzado, confirma qué falta */}
               {!esCompleta && (
                 <Typography sx={{ fontSize: '0.88rem', color: 'rgba(246, 241, 234, 0.7)', mb: 2, lineHeight: 1.5 }}>
-                  {elegidas.length === obligatorias
-                    ? 'Agrega las secciones que quieras y tu cotización se arma al instante.'
+                  {nAgregadas === 0
+                    ? 'Suma los servicios que quieras y tu cotización se arma al instante.'
                     : `No incluye: ${
                         excluidas.length <= 3
                           ? excluidas.map((s) => s.nombre).join(', ')

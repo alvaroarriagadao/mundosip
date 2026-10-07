@@ -27,7 +27,7 @@ const SECCIONES_OBLIGATORIAS = new Set(['OBRAS PRELIMINARES', 'TABIQUERIAS']);
 const NOMBRES_SECCION = new Map([
   ['OBRAS PRELIMINARES', 'Obras preliminares'],
   ['OBRA GRUESA', 'Obra gruesa'],
-  ['TABIQUERIAS', 'Tabiquerías'],
+  ['TABIQUERIAS', 'Instalación y tabiquerías'],
   ['REVESTIMIENTOS EXTERIORES', 'Revestimientos exteriores'],
   ['REVESTIENTOS INTERIOR', 'Revestimientos interiores'],
   ['PUERTAS Y VENTANAS', 'Puertas y ventanas'],

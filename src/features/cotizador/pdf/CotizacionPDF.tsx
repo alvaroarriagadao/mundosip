@@ -237,7 +237,7 @@ export default function CotizacionPDF({ cotizacion }: { cotizacion: SnapshotCoti
           <View key={seccion.id} style={s.seccion} wrap={seccion.items.length > 8}>
             <View style={s.seccionHeader}>
               <Text style={s.seccionNombre}>{seccion.nombre}</Text>
-              <Text style={s.seccionCodigo}>{seccion.codigo}</Text>
+              <Text style={s.seccionCodigo}>{seccion.obligatoria ? `INCLUIDO SIEMPRE · ${seccion.codigo}` : seccion.codigo}</Text>
             </View>
             {CABECERA_COLUMNAS}
             {seccion.items.map((item) => (
