@@ -104,13 +104,15 @@ export default async function PreguntasFrecuentesPage() {
                   aspectRatio: { xs: '4 / 3.2', md: '4 / 3.5' },
                 }}
               >
+                {/* Foto vertical en recuadro casi cuadrado: el encuadre sube para que
+                    el vano de la ventana y el volcán queden sobre la tarjeta de contacto */}
                 <Image
-                  src="/images/faq-hero.jpg"
-                  alt="Detalle de una casa MundoSIP en panel SIP con esquemas constructivos"
+                  src="/images/faq-ventana.jpg"
+                  alt="Paisaje del sur de Chile con volcán visto a través del vano de una ventana en muro de paneles SIP"
                   fill
                   priority
                   sizes="(max-width: 900px) 100vw, 46vw"
-                  style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
+                  style={{ objectFit: 'cover', objectPosition: 'center 38%' }}
                 />
                 <Box
                   aria-hidden
