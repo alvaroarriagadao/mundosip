@@ -28,7 +28,7 @@ export default function FaqAccordion({ faqs }: { faqs: Faq[] }) {
         const contentId = `faq-panel-${faq.id}`;
 
         return (
-          <Reveal key={faq.id} y={22} delay={Math.min(i * 0.05, 0.4)}>
+          <Reveal key={faq.id} y={22} delay={(i % 4) * 0.05}>
             <Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }}>
               <Box
                 component="button"

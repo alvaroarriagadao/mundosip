@@ -19,6 +19,7 @@ import { monoFamily } from '@/theme/typography';
 
 import PanelCaracteristicas from './PanelCaracteristicas';
 import PanelCard from './PanelCard';
+import { mmOsb, tonosPorEspesor } from './espesor';
 import type { PanelProducto } from './panel.types';
 import { cotizarPanelesSchema } from './pedido.schema';
 
@@ -66,6 +67,7 @@ export default function PanelesShop({ paneles }: { paneles: PanelProducto[] }) {
   );
   const total = useMemo(() => lineas.reduce((suma, l) => suma + l.panel.precioClp * l.cantidad, 0), [lineas]);
   const unidades = useMemo(() => lineas.reduce((suma, l) => suma + l.cantidad, 0), [lineas]);
+  const tonos = useMemo(() => tonosPorEspesor(paneles), [paneles]);
 
   const {
     register,
@@ -150,12 +152,13 @@ export default function PanelesShop({ paneles }: { paneles: PanelProducto[] }) {
         }}
       >
         {paneles.map((panel, i) => (
-          <Reveal key={panel.id} y={16} delay={Math.min(i * 0.04, 0.2)} style={{ display: 'flex' }}>
+          <Reveal key={panel.id} y={16} delay={(i % 2) * 0.06} style={{ display: 'flex' }}>
             <PanelCard
               panel={panel}
               cantidad={carrito.get(panel.slug) ?? 0}
               onCambiar={(nueva) => cambiarCantidad(panel.slug, nueva)}
               onVerCaracteristicas={() => setDetalle(panel)}
+              tonoEspesor={tonos.get(mmOsb(panel) ?? -1)}
             />
           </Reveal>
         ))}

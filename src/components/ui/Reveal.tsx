@@ -21,8 +21,15 @@ interface RevealProps {
   style?: React.CSSProperties;
 }
 
-/** Fade + translate al entrar en viewport; inerte con prefers-reduced-motion */
-export default function Reveal({ children, delay = 0, y = 28, x = 0, once = true, amount = 0.25, margin = '0px 0px -8% 0px', style }: RevealProps) {
+/**
+ * Fade + translate al entrar en viewport; inerte con prefers-reduced-motion.
+ *
+ * Dispara apenas asoma el 10 % del elemento: con umbrales más altos las
+ * cards altas quedaban en blanco media pantalla mientras se scrolleaba.
+ * En listas, escalonar con `(i % columnas) * x` y no con `i * x`: si no,
+ * el elemento 8 siempre espera medio segundo aunque entre solo.
+ */
+export default function Reveal({ children, delay = 0, y = 28, x = 0, once = true, amount = 0.1, margin = '0px', style }: RevealProps) {
   const reduced = useReducedMotion();
 
   if (reduced) {
@@ -34,7 +41,7 @@ export default function Reveal({ children, delay = 0, y = 28, x = 0, once = true
       initial={{ opacity: 0, y, x }}
       whileInView={{ opacity: 1, y: 0, x: 0 }}
       viewport={{ once, amount, margin }}
-      transition={{ duration: 0.8, ease: EASE, delay }}
+      transition={{ duration: 0.65, ease: EASE, delay }}
       style={style}
     >
       {children}

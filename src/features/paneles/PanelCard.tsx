@@ -8,10 +8,55 @@ import { formatCLP } from '@/lib/format';
 import { colors, motionTokens, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
 
+import { etiquetaOsb, mmOsb } from './espesor';
 import type { PanelProducto } from './panel.types';
 
 /** Imagen estándar cuando el producto no trae la suya */
 export const IMAGEN_DEFECTO = '/images/paneles/panel-sip.png';
+
+/**
+ * Colores de la insignia de espesor, de la paleta de marca. Hoy hay dos
+ * espesores de OSB; si aparece un tercero toma el siguiente tono.
+ */
+// Fondos sólidos (no transparentes): la insignia va encima de la foto
+const TONOS_ESPESOR = [
+  { fondo: '#E7EEF0', borde: 'rgba(32, 78, 95, 0.25)', texto: colors.teal },
+  { fondo: '#F4EADD', borde: 'rgba(185, 138, 78, 0.45)', texto: colors.tanDark },
+  { fondo: '#ECEEEF', borde: 'rgba(107, 122, 130, 0.35)', texto: colors.ink },
+] as const;
+
+/** Insignia "OSB 9.5 mm" de la esquina superior izquierda de la tarjeta */
+export function InsigniaEspesor({ mm, tono }: { mm: number; tono: number }) {
+  const t = TONOS_ESPESOR[tono % TONOS_ESPESOR.length];
+  return (
+    <Box
+      component="span"
+      sx={{
+        position: 'absolute',
+        top: 8,
+        left: 8,
+        zIndex: 1,
+        display: 'inline-flex',
+        alignItems: 'center',
+        px: 0.85,
+        py: 0.35,
+        borderRadius: `${radii.pill}px`,
+        border: '1px solid',
+        borderColor: t.borde,
+        bgcolor: t.fondo,
+        color: t.texto,
+        fontFamily: monoFamily,
+        fontSize: '0.64rem',
+        fontWeight: 700,
+        letterSpacing: '0.02em',
+        lineHeight: 1.2,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {etiquetaOsb(mm)}
+    </Box>
+  );
+}
 
 /** Control − cantidad + */
 function Stepper({
@@ -62,6 +107,8 @@ interface PanelCardProps {
   cantidad: number;
   onCambiar: (nueva: number) => void;
   onVerCaracteristicas: () => void;
+  /** Color de la insignia de espesor (ver tonosPorEspesor) */
+  tonoEspesor?: number;
 }
 
 /**
@@ -73,8 +120,9 @@ interface PanelCardProps {
  * características van a un modal para que abrirlas no descuadre la
  * grilla ni cambie el alto de la card.
  */
-export default function PanelCard({ panel, cantidad, onCambiar, onVerCaracteristicas }: PanelCardProps) {
+export default function PanelCard({ panel, cantidad, onCambiar, onVerCaracteristicas, tonoEspesor = 0 }: PanelCardProps) {
   const elegido = cantidad > 0;
+  const mm = mmOsb(panel);
 
   return (
     <Box
@@ -114,13 +162,16 @@ export default function PanelCard({ panel, cantidad, onCambiar, onVerCaracterist
           loading="lazy"
           sx={{ width: '100%', height: '100%', objectFit: 'contain', p: 1.25 }}
         />
+        {/* Esquina superior izquierda de la tarjeta: sobre la foto hay
+            aire de sobra y el nombre del panel no se parte en dos líneas */}
+        {mm != null && <InsigniaEspesor mm={mm} tono={tonoEspesor} />}
         {elegido && (
           <Box
             aria-hidden
             sx={{
               position: 'absolute',
               top: 8,
-              left: 8,
+              right: 8,
               width: 22,
               height: 22,
               borderRadius: '50%',

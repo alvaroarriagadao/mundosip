@@ -161,6 +161,9 @@ export const ordenModelosSchema = z.object({
   ids: z.array(z.uuid()).min(1).max(200),
 });
 
+/** Orden de la tienda /paneles: mismo formato que el de modelos */
+export const ordenPanelesSchema = ordenModelosSchema;
+
 export type ModeloInput = z.infer<typeof modeloSchema>;
 export type ModeloListasInput = z.infer<typeof modeloListasSchema>;
 export type ModeloImagenesInput = z.infer<typeof modeloImagenesSchema>;

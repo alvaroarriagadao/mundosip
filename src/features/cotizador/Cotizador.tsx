@@ -663,7 +663,7 @@ export default function Cotizador({
           }}
         >
           {opcionales.map((seccion, i) => (
-            <Reveal key={seccion.id} y={16} delay={Math.min(i * 0.03, 0.24)}>
+            <Reveal key={seccion.id} y={16} delay={(i % 4) * 0.03}>
               <SeccionCard
                 seccion={seccion}
                 incluida={marcadaIds.has(seccion.id)}

@@ -21,6 +21,17 @@ const clp = new Intl.NumberFormat('es-CL', {
   maximumFractionDigits: 0,
 });
 
+/**
+ * Los precios de la tienda ya incluyen IVA: el neto se obtiene hacia
+ * atrás y el IVA es la diferencia, así neto + IVA = total al peso.
+ */
+const IVA_PCT = 19;
+
+function desglosarIva(totalConIva: number) {
+  const neto = Math.round(totalConIva / (1 + IVA_PCT / 100));
+  return { neto, iva: totalConIva - neto };
+}
+
 const fechaFmt = new Intl.DateTimeFormat('es-CL', { day: '2-digit', month: 'long', year: 'numeric' });
 
 const s = StyleSheet.create({
@@ -63,8 +74,19 @@ const s = StyleSheet.create({
   colPrecio: { width: 90, textAlign: 'right' },
   colTotal: { width: 90, textAlign: 'right', fontFamily: 'Helvetica-Bold' },
 
+  desglose: { marginTop: 14, alignSelf: 'flex-end', width: 240 },
+  desgloseFila: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderBottomWidth: 0.5,
+    borderBottomColor: LINE,
+  },
+  desgloseEtiqueta: { color: MUTED },
+  desgloseValor: { color: INK, fontFamily: 'Helvetica-Bold' },
   totalBox: {
-    marginTop: 14,
+    marginTop: 6,
     alignSelf: 'flex-end',
     width: 240,
     backgroundColor: TEAL_NIGHT,
@@ -77,6 +99,8 @@ const s = StyleSheet.create({
   },
   totalEtiqueta: { color: TAN, fontFamily: 'Helvetica-Bold', fontSize: 9, letterSpacing: 1 },
   totalValor: { color: CREAM, fontFamily: 'Helvetica-Bold', fontSize: 12.5 },
+
+  envio: { marginTop: 6, alignSelf: 'flex-end', width: 240, textAlign: 'right', color: TEAL, fontFamily: 'Helvetica-Bold', fontSize: 8.5 },
 
   notas: { marginTop: 18 },
   notasTitulo: { fontFamily: 'Helvetica-Bold', fontSize: 8.5, color: TEAL, marginBottom: 3 },
@@ -99,6 +123,7 @@ const s = StyleSheet.create({
 export default function PedidoPanelesPDF({ pedido }: { pedido: SnapshotPedido }) {
   const fecha = fechaFmt.format(new Date(pedido.fechaISO));
   const unidades = pedido.lineas.reduce((suma, l) => suma + l.cantidad, 0);
+  const { neto, iva } = desglosarIva(pedido.totalClp);
 
   return (
     <Document title={`Cotización de paneles ${pedido.folio} — MundoSIP`} author="MundoSIP">
@@ -157,14 +182,27 @@ export default function PedidoPanelesPDF({ pedido }: { pedido: SnapshotPedido })
           </View>
         ))}
 
-        <View style={s.totalBox} wrap={false}>
-          <Text style={s.totalEtiqueta}>TOTAL</Text>
-          <Text style={s.totalValor}>{clp.format(pedido.totalClp)}</Text>
+        <View wrap={false}>
+          <View style={s.desglose}>
+            <View style={s.desgloseFila}>
+              <Text style={s.desgloseEtiqueta}>Valor neto</Text>
+              <Text style={s.desgloseValor}>{clp.format(neto)}</Text>
+            </View>
+            <View style={s.desgloseFila}>
+              <Text style={s.desgloseEtiqueta}>IVA ({IVA_PCT}%)</Text>
+              <Text style={s.desgloseValor}>{clp.format(iva)}</Text>
+            </View>
+          </View>
+          <View style={s.totalBox}>
+            <Text style={s.totalEtiqueta}>TOTAL</Text>
+            <Text style={s.totalValor}>{clp.format(pedido.totalClp)}</Text>
+          </View>
+          <Text style={s.envio}>Consultar el costo de envío con el ejecutivo</Text>
         </View>
 
         <View style={s.notas} wrap={false}>
           <Text style={s.notasTitulo}>Notas</Text>
-          <Text style={s.nota}>·  Valores unitarios referenciales; no incluyen despacho.</Text>
+          <Text style={s.nota}>·  Valores unitarios referenciales, con IVA incluido; no incluyen despacho.</Text>
           <Text style={s.nota}>
             ·  Nuestro equipo te contactará para confirmar stock, coordinar la entrega y la forma de pago.
           </Text>

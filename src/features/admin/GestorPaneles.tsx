@@ -3,13 +3,14 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, GripVertical, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 
 import Button from '@/components/ui/Button';
 import Toggle from '@/components/ui/Toggle';
-import { formatCLP } from '@/lib/format';
 import { EASE } from '@/lib/motion';
+import PanelCard from '@/features/paneles/PanelCard';
+import { mmOsb, tonosPorEspesor } from '@/features/paneles/espesor';
 import type { PanelProducto } from '@/features/paneles/panel.types';
 import { colors, motionTokens, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
@@ -19,9 +20,11 @@ import { etiquetaSx, inputNumeroSx, inputSx } from './ui';
 
 /**
  * Gestor de productos de la tienda /paneles — pensado para alguien NO
- * técnico: una fila por producto, "Editar" abre el formulario ahí mismo,
- * el ojo publica/oculta al tiro y "Agregar un panel" usa el mismo
- * formulario. Todo se guarda directo en la base de datos.
+ * técnico. Muestra las MISMAS tarjetas que ve el cliente, en la misma
+ * grilla y al mismo ancho, para ordenar "viendo" la tienda: se arrastran
+ * (o se mueven con las flechas) y el orden se guarda solo. "Editar" abre
+ * el formulario ahí mismo, el interruptor publica/oculta al tiro y
+ * "Agregar un panel" usa el mismo formulario.
  */
 
 const IMAGEN_DEFECTO = '/images/paneles/panel-sip.png';
@@ -184,17 +187,47 @@ function FormPanel({
   );
 }
 
-/** Una fila de producto con acciones y edición en línea */
-function FilaProducto({
-  panel,
-  onActualizado,
-  onEliminado,
-}: {
+const iconoSx = {
+  border: 0,
+  borderRadius: `${radii.sm}px`,
+  width: 30,
+  height: 30,
+  display: 'grid',
+  placeItems: 'center',
+  cursor: 'pointer',
+  bgcolor: 'transparent',
+  color: colors.muted,
+  transition: `all 0.2s ${motionTokens.easeCss}`,
+  '&:disabled': { opacity: 0.3, cursor: 'default' },
+} as const;
+
+interface TarjetaProductoProps {
   panel: PanelProducto;
+  posicion: number;
+  total: number;
+  tonoEspesor?: number;
+  editando: boolean;
+  onEditar: (abrir: boolean) => void;
   onActualizado: (panel: PanelProducto) => void;
   onEliminado: () => void;
-}) {
-  const [editando, setEditando] = useState(false);
+  onMover: (delta: -1 | 1) => void;
+}
+
+/**
+ * Un producto: barra de acciones arriba y, debajo, la tarjeta tal cual
+ * sale en /paneles (sin interacción: es una vista previa).
+ */
+function TarjetaProducto({
+  panel,
+  posicion,
+  total,
+  tonoEspesor,
+  editando,
+  onEditar,
+  onActualizado,
+  onEliminado,
+  onMover,
+}: TarjetaProductoProps) {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -214,7 +247,7 @@ function FilaProducto({
         return;
       }
       onActualizado({ ...panel, ...payload, precioClp: payload.precioClp });
-      setEditando(false);
+      onEditar(false);
     } catch {
       setError('No se pudo guardar. Revisa tu conexión.');
     } finally {
@@ -239,102 +272,71 @@ function FilaProducto({
   }
 
   return (
-    <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: `${radii.md}px`, bgcolor: 'background.paper', overflow: 'hidden' }}>
-      {/*
-        Grid con áreas: en móvil la ficha va arriba y precio/estado/acciones
-        bajan a una segunda línea. En una sola fila el nombre quedaba
-        aplastado a 0 px por los elementos de ancho fijo.
-      */}
-      <Box
-        sx={{
-          display: 'grid',
-          alignItems: 'center',
-          gap: { xs: 1.25, md: 2 },
-          p: { xs: 1.75, md: 2 },
-          gridTemplateColumns: { xs: 'auto minmax(0, 1fr) auto', md: 'auto minmax(0, 1fr) auto auto auto' },
-          gridTemplateAreas: {
-            xs: `"foto datos datos" "precio estado acciones"`,
-            md: `"foto datos precio estado acciones"`,
-          },
-        }}
-      >
-        <Box sx={{ gridArea: 'foto', width: 52, height: 52, borderRadius: `${radii.sm}px`, bgcolor: '#FBF9F5', border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
-          <Box
-            component="img"
-            src={panel.imagenUrl || IMAGEN_DEFECTO}
-            alt=""
-            sx={{ width: '100%', height: '100%', objectFit: 'contain', p: 0.5 }}
-          />
-        </Box>
-
-        <Box sx={{ gridArea: 'datos', minWidth: 0 }}>
-          <Typography sx={{ fontWeight: 700, fontSize: '0.98rem', lineHeight: 1.3 }}>
-            {panel.nombre}
-          </Typography>
-          <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>
-            {panel.dimensiones ?? 'Sin dimensiones'}
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, height: '100%' }}>
+      {/* Barra de acciones: asa + posición, flechas, visible, editar, borrar */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minHeight: 34 }}>
+        <Box
+          title="Arrastra para cambiar el orden"
+          sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, color: colors.muted, pr: 0.5 }}
+        >
+          <GripVertical size={16} />
+          <Typography component="span" sx={{ fontFamily: monoFamily, fontWeight: 700, fontSize: '0.8rem', color: colors.ink }}>
+            {posicion}
           </Typography>
         </Box>
+        <Box component="button" type="button" onClick={() => onMover(-1)} disabled={posicion === 1} aria-label={`Mover ${panel.nombre} antes`} title="Mover antes" sx={{ ...iconoSx, '&:hover:not(:disabled)': { color: colors.teal, bgcolor: 'rgba(32, 78, 95, 0.08)' } }}>
+          <ChevronLeft size={16} />
+        </Box>
+        <Box component="button" type="button" onClick={() => onMover(1)} disabled={posicion === total} aria-label={`Mover ${panel.nombre} después`} title="Mover después" sx={{ ...iconoSx, '&:hover:not(:disabled)': { color: colors.teal, bgcolor: 'rgba(32, 78, 95, 0.08)' } }}>
+          <ChevronRight size={16} />
+        </Box>
 
-        <Typography sx={{ gridArea: 'precio', fontFamily: monoFamily, fontWeight: 700, fontSize: '0.98rem', whiteSpace: 'nowrap' }}>
-          {formatCLP(panel.precioClp)}
-        </Typography>
-
-        {/* Interruptor real: se prende y se apaga sin abrir el formulario */}
-        <Box sx={{ gridArea: 'estado', justifySelf: { xs: 'center', md: 'start' } }}>
+        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Toggle
             activo={panel.publicado}
             onCambiar={alternarPublicado}
             etiqueta={panel.publicado ? 'Visible' : 'Oculto'}
             ariaLabel={`${panel.publicado ? 'Ocultar' : 'Publicar'} ${panel.nombre} en la tienda`}
           />
-        </Box>
-
-        <Box sx={{ gridArea: 'acciones', display: 'flex', gap: 0.5, justifySelf: 'end' }}>
           <Box
             component="button"
             type="button"
-            onClick={() => setEditando((v) => !v)}
+            onClick={() => onEditar(!editando)}
             aria-expanded={editando}
             aria-label={`Editar ${panel.nombre}`}
+            title="Editar"
             sx={{
-              border: 0,
-              borderRadius: `${radii.sm}px`,
-              width: 34,
-              height: 34,
-              display: 'grid',
-              placeItems: 'center',
-              cursor: 'pointer',
+              ...iconoSx,
+              ml: 0.5,
               bgcolor: editando ? colors.teal : 'transparent',
               color: editando ? colors.cream : colors.teal,
-              transition: `all 0.2s ${motionTokens.easeCss}`,
               '&:hover': { bgcolor: editando ? colors.tealDeep : 'rgba(32, 78, 95, 0.08)' },
             }}
           >
-            {editando ? <X size={16} /> : <Pencil size={15} />}
+            {editando ? <X size={15} /> : <Pencil size={14} />}
           </Box>
-          <Box
-            component="button"
-            type="button"
-            onClick={eliminar}
-            aria-label={`Eliminar ${panel.nombre}`}
-            sx={{
-              border: 0,
-              borderRadius: `${radii.sm}px`,
-              width: 34,
-              height: 34,
-              display: 'grid',
-              placeItems: 'center',
-              cursor: 'pointer',
-              bgcolor: 'transparent',
-              color: colors.muted,
-              transition: `color 0.2s ${motionTokens.easeCss}`,
-              '&:hover': { color: '#B4472E' },
-            }}
-          >
-            <Trash2 size={16} />
+          <Box component="button" type="button" onClick={eliminar} aria-label={`Eliminar ${panel.nombre}`} title="Eliminar" sx={{ ...iconoSx, '&:hover': { color: '#B4472E' } }}>
+            <Trash2 size={15} />
           </Box>
         </Box>
+      </Box>
+
+      {/* La tarjeta real de la tienda, inerte: solo para ver cómo queda.
+          Al editar no se estira a lo ancho, sigue midiendo una columna. */}
+      <Box
+        inert
+        sx={{
+          display: 'flex',
+          flex: editando ? 'none' : 1,
+          width: editando ? { xs: '100%', sm: 'calc(50% - 8px)' } : '100%',
+          pointerEvents: 'none',
+          userSelect: 'none',
+          opacity: panel.publicado ? 1 : 0.45,
+          filter: panel.publicado ? 'none' : 'grayscale(0.6)',
+          transition: `opacity 0.25s ${motionTokens.easeCss}`,
+        }}
+      >
+        <PanelCard panel={panel} cantidad={0} onCambiar={() => {}} onVerCaracteristicas={() => {}} tonoEspesor={tonoEspesor} />
       </Box>
 
       <AnimatePresence initial={false}>
@@ -347,13 +349,15 @@ function FilaProducto({
             transition={{ duration: 0.3, ease: EASE }}
             style={{ overflow: 'hidden' }}
           >
-            <FormPanel
-              inicial={panel}
-              guardando={guardando}
-              error={error}
-              onGuardar={guardar}
-              onCancelar={() => setEditando(false)}
-            />
+            <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: `${radii.md}px`, overflow: 'hidden', bgcolor: 'background.paper' }}>
+              <FormPanel
+                inicial={panel}
+                guardando={guardando}
+                error={error}
+                onGuardar={guardar}
+                onCancelar={() => onEditar(false)}
+              />
+            </Box>
           </motion.div>
         )}
       </AnimatePresence>
@@ -367,6 +371,37 @@ export default function GestorPaneles({ paneles }: { paneles: PanelProducto[] })
   const [guardandoNuevo, setGuardandoNuevo] = useState(false);
   const [errorNuevo, setErrorNuevo] = useState<string | null>(null);
   const [creadoOk, setCreadoOk] = useState(false);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [arrastrando, setArrastrando] = useState<number | null>(null);
+  const [destino, setDestino] = useState<number | null>(null);
+  const [estadoOrden, setEstadoOrden] = useState<'idle' | 'guardando' | 'ok' | 'error'>('idle');
+  const tonos = tonosPorEspesor(lista);
+  const visibles = lista.filter((p) => p.publicado).length;
+
+  /**
+   * Mueve un producto y guarda el orden al tiro: la posición aquí es la
+   * posición en /paneles (1 = arriba a la izquierda). Sin botón "guardar"
+   * porque arrastrar y después tener que guardar se olvida.
+   */
+  async function reordenar(desde: number, hasta: number) {
+    if (desde === hasta || hasta < 0 || hasta >= lista.length) return;
+    const copia = [...lista];
+    const [movido] = copia.splice(desde, 1);
+    copia.splice(hasta, 0, movido);
+    setLista(copia);
+    setEstadoOrden('guardando');
+    try {
+      const respuesta = await fetch('/api/admin/paneles/orden', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: copia.map((p) => p.id) }),
+      });
+      setEstadoOrden(respuesta.ok ? 'ok' : 'error');
+      if (respuesta.ok) setTimeout(() => setEstadoOrden('idle'), 2000);
+    } catch {
+      setEstadoOrden('error');
+    }
+  }
 
   async function crear(campos: CamposPanel) {
     setGuardandoNuevo(true);
@@ -408,8 +443,11 @@ export default function GestorPaneles({ paneles }: { paneles: PanelProducto[] })
             <Check size={16} strokeWidth={2.5} /> Producto creado y visible en la tienda
           </Typography>
         )}
-        <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', ml: 'auto' }}>
-          {lista.length} productos · los cambios se ven al instante en /paneles
+        <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary', ml: { md: 'auto' } }}>
+          {estadoOrden === 'guardando' && 'Guardando orden… · '}
+          {estadoOrden === 'ok' && <Box component="span" sx={{ color: colors.teal, fontWeight: 600 }}>Orden guardado · </Box>}
+          {estadoOrden === 'error' && <Box component="span" sx={{ color: '#B4472E', fontWeight: 600 }}>No se pudo guardar el orden · </Box>}
+          {lista.length} productos · {visibles} visibles
         </Typography>
       </Box>
 
@@ -439,20 +477,111 @@ export default function GestorPaneles({ paneles }: { paneles: PanelProducto[] })
         )}
       </AnimatePresence>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        {lista.map((panel) => (
-          <FilaProducto
-            key={panel.id}
-            panel={panel}
-            onActualizado={(actualizado) => setLista((prev) => prev.map((p) => (p.id === actualizado.id ? actualizado : p)))}
-            onEliminado={() => setLista((prev) => prev.filter((p) => p.id !== panel.id))}
-          />
-        ))}
-        {lista.length === 0 && (
-          <Typography sx={{ color: 'text.secondary', py: 3 }}>
-            Aún no hay productos. Crea el primero con “Agregar un panel”.
+      {/* Misma estructura que /paneles: grilla de 2 columnas + una columna
+          lateral del ancho del carrito, así cada tarjeta mide lo mismo que
+          en la tienda y el orden se decide viendo el resultado real. */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 380px' }, gap: { xs: 3, lg: 5 }, alignItems: 'start' }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+            columnGap: { xs: 1.5, md: 2 },
+            rowGap: { xs: 2.5, md: 3 },
+            alignItems: 'stretch',
+          }}
+        >
+          {lista.map((panel, i) => {
+            const editando = editandoId === panel.id;
+            return (
+              <Box
+                key={panel.id}
+                // Mientras se edita no se arrastra: arrastrar sobre inputs
+                // selecciona texto y mueve la tarjeta sin querer
+                draggable={!editando}
+                onDragStart={(e: React.DragEvent) => {
+                  e.dataTransfer.effectAllowed = 'move';
+                  setArrastrando(i);
+                }}
+                onDragEnd={() => {
+                  setArrastrando(null);
+                  setDestino(null);
+                }}
+                onDragOver={(e: React.DragEvent) => {
+                  if (arrastrando == null) return;
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = 'move';
+                  if (destino !== i) setDestino(i);
+                }}
+                onDrop={(e: React.DragEvent) => {
+                  if (arrastrando == null) return;
+                  e.preventDefault();
+                  void reordenar(arrastrando, i);
+                  setArrastrando(null);
+                  setDestino(null);
+                }}
+                sx={{
+                  gridColumn: editando ? '1 / -1' : 'auto',
+                  cursor: editando ? 'default' : 'grab',
+                  opacity: arrastrando === i ? 0.4 : 1,
+                  outline: destino === i && arrastrando !== i ? `2px dashed ${colors.teal}` : 'none',
+                  outlineOffset: 4,
+                  borderRadius: `${radii.md}px`,
+                  transition: `opacity 0.15s ${motionTokens.easeCss}`,
+                  '&:active': { cursor: editando ? 'default' : 'grabbing' },
+                }}
+              >
+                <TarjetaProducto
+                  panel={panel}
+                  posicion={i + 1}
+                  total={lista.length}
+                  tonoEspesor={tonos.get(mmOsb(panel) ?? -1)}
+                  editando={editando}
+                  onEditar={(abrir) => setEditandoId(abrir ? panel.id : null)}
+                  onActualizado={(actualizado) => setLista((prev) => prev.map((p) => (p.id === actualizado.id ? actualizado : p)))}
+                  onEliminado={() => setLista((prev) => prev.filter((p) => p.id !== panel.id))}
+                  onMover={(delta) => void reordenar(i, i + delta)}
+                />
+              </Box>
+            );
+          })}
+          {lista.length === 0 && (
+            <Typography sx={{ color: 'text.secondary', py: 3 }}>
+              Aún no hay productos. Crea el primero con “Agregar un panel”.
+            </Typography>
+          )}
+        </Box>
+
+        {/* Columna del carrito en la tienda: aquí, la guía de uso */}
+        <Box
+          sx={{
+            position: { lg: 'sticky' },
+            top: { lg: 112 },
+            p: 3,
+            borderRadius: `${radii.lg}px`,
+            bgcolor: colors.tealNight,
+            color: colors.cream,
+          }}
+        >
+          <Typography sx={{ fontFamily: monoFamily, fontSize: '0.7rem', letterSpacing: '0.2em', color: colors.tanLight, mb: 1.5 }}>
+            ASÍ SE VE EN /PANELES
           </Typography>
-        )}
+          <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', mb: 1.5 }}>Ordena viendo la tienda</Typography>
+          <Box component="ul" sx={{ m: 0, pl: 2.25, display: 'flex', flexDirection: 'column', gap: 1, fontSize: '0.9rem', lineHeight: 1.5, color: 'rgba(246, 241, 234, 0.78)' }}>
+            <li>Arrastra una tarjeta a otra posición, o usa las flechas ‹ ›. Se guarda solo.</li>
+            <li>El 1 va arriba a la izquierda; se lee de izquierda a derecha.</li>
+            <li>Los productos ocultos se ven atenuados y no salen en la tienda.</li>
+            <li>La etiqueta de color muestra el espesor del OSB que escribes en “Espesor OSB”.</li>
+          </Box>
+          <Box
+            component="a"
+            href="/paneles"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ display: 'inline-block', mt: 2.5, color: colors.tanLight, fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline', textUnderlineOffset: '3px', '&:hover': { color: colors.cream } }}
+          >
+            Abrir la tienda →
+          </Box>
+        </Box>
       </Box>
 
       {guardandoNuevo && (

@@ -86,7 +86,7 @@ export default async function ModelosPage() {
             // El escalonado se reinicia por fila y la card aparece apenas
             // asoma: con cards altas, esperar al 25 % visible + 0,5 s de
             // retardo acumulado dejaba la segunda fila en blanco al bajar
-            <Reveal key={modelo.slug} delay={(i % 3) * 0.08} amount={0.08} margin="0px" y={20}>
+            <Reveal key={modelo.slug} delay={(i % 3) * 0.08} y={20}>
               <ModeloCard modelo={modelo} promocion={promocion} />
             </Reveal>
           ))}
