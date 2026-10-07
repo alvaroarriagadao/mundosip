@@ -164,6 +164,38 @@ export const ordenModelosSchema = z.object({
 /** Orden de la tienda /paneles: mismo formato que el de modelos */
 export const ordenPanelesSchema = ordenModelosSchema;
 
+/**
+ * Pregunta frecuente. Lleva respuesta, puntos o ambos (los puntos son
+ * la lista "Eficiencia energética: …"). Respuesta vacía → null.
+ */
+export const faqSchema = z
+  .object({
+    pregunta: z.string().trim().min(5, 'Escribe la pregunta').max(200, 'Pregunta muy larga'),
+    respuesta: z
+      .string()
+      .trim()
+      .max(1500, 'Respuesta muy larga')
+      .transform((v) => v || null)
+      .nullable(),
+    puntos: z
+      .array(
+        z.object({
+          titulo: z.string().trim().min(1, 'Cada punto necesita un título').max(80),
+          texto: z.string().trim().min(1, 'Cada punto necesita un texto').max(300),
+        }),
+      )
+      .max(12, 'Máximo 12 puntos'),
+    publicado: z.boolean(),
+  })
+  .refine((f) => f.respuesta != null || f.puntos.length > 0, {
+    message: 'Escribe una respuesta o agrega al menos un punto',
+  });
+
+export type FaqInput = z.infer<typeof faqSchema>;
+
+/** Orden de las preguntas: mismo formato que el de modelos */
+export const ordenFaqsSchema = ordenModelosSchema;
+
 export type ModeloInput = z.infer<typeof modeloSchema>;
 export type ModeloListasInput = z.infer<typeof modeloListasSchema>;
 export type ModeloImagenesInput = z.infer<typeof modeloImagenesSchema>;

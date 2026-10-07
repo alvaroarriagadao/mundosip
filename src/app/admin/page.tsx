@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { ArrowRight, Calculator, House, Layers, MapPinned } from 'lucide-react';
+import { ArrowRight, Calculator, House, Layers, MapPinned, MessageCircleQuestion } from 'lucide-react';
 
 import Container from '@/components/ui/Container';
 import Eyebrow from '@/components/ui/Eyebrow';
@@ -55,6 +55,14 @@ const SECCIONES = [
     fondo: 'rgba(165, 88, 58, 0.12)',
     titulo: 'Proyectos construidos',
     descripcion: 'Las obras de /proyectos: fotos, textos, región y video. Se previsualizan como borrador antes de publicarlas.',
+  },
+  {
+    href: '/admin/preguntas',
+    icono: <MessageCircleQuestion size={26} strokeWidth={1.75} />,
+    color: '#5B5F8A',
+    fondo: 'rgba(91, 95, 138, 0.12)',
+    titulo: 'Preguntas frecuentes',
+    descripcion: 'Las preguntas de /preguntas-frecuentes: agregar, editar la pregunta y su respuesta, ordenar y ocultar.',
   },
 ];
 

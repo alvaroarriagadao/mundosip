@@ -12,7 +12,6 @@ import { monoFamily } from '@/theme/typography';
 export default function ProjectHero({ proyecto }: { proyecto: Proyecto }) {
   const specs = [
     { label: 'Superficie', value: `${proyecto.superficieM2} m²` },
-    { label: 'Año diseño', value: `${proyecto.anoDiseno}` },
     { label: 'Año construcción', value: `${proyecto.anoConstruccion}` },
     { label: 'Ubicación', value: proyecto.ubicacion },
   ];
@@ -59,13 +58,14 @@ export default function ProjectHero({ proyecto }: { proyecto: Proyecto }) {
             px: { xs: 3, md: 6 },
             py: { xs: 3, md: 4 },
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1fr 1.6fr' },
+            gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1.6fr' },
             gap: { xs: 3, md: 4 },
             boxShadow: '0 30px 70px -30px rgba(13, 33, 41, 0.45)',
           }}
         >
-          {specs.map((spec) => (
-            <Box key={spec.label}>
+          {/* En móvil la ubicación (el dato más largo) usa la fila completa */}
+          {specs.map((spec, i) => (
+            <Box key={spec.label} sx={{ gridColumn: { xs: i === specs.length - 1 ? '1 / -1' : 'auto', md: 'auto' } }}>
               <Typography
                 component="p"
                 sx={{

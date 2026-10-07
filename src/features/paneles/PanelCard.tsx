@@ -18,14 +18,18 @@ export const IMAGEN_DEFECTO = '/images/paneles/panel-sip.png';
  * Colores de la insignia de espesor, de la paleta de marca. Hoy hay dos
  * espesores de OSB; si aparece un tercero toma el siguiente tono.
  */
-// Fondos sólidos (no transparentes): la insignia va encima de la foto
+// Colores sólidos de la paleta: la insignia tiene que notarse de lejos
 const TONOS_ESPESOR = [
-  { fondo: '#E7EEF0', borde: 'rgba(32, 78, 95, 0.25)', texto: colors.teal },
-  { fondo: '#F4EADD', borde: 'rgba(185, 138, 78, 0.45)', texto: colors.tanDark },
-  { fondo: '#ECEEEF', borde: 'rgba(107, 122, 130, 0.35)', texto: colors.ink },
+  { fondo: colors.teal, texto: colors.cream },
+  { fondo: colors.tan, texto: colors.tealNight },
+  { fondo: colors.muted, texto: colors.cream },
 ] as const;
 
-/** Insignia "OSB 9.5 mm" de la esquina superior izquierda de la tarjeta */
+/**
+ * Insignia "OSB 9.5 mm": pestaña pegada a la esquina superior derecha
+ * de la tarjeta (la tarjeta recorta con overflow, así que la esquina
+ * de la pestaña sigue la curva de la tarjeta).
+ */
 export function InsigniaEspesor({ mm, tono }: { mm: number; tono: number }) {
   const t = TONOS_ESPESOR[tono % TONOS_ESPESOR.length];
   return (
@@ -33,22 +37,20 @@ export function InsigniaEspesor({ mm, tono }: { mm: number; tono: number }) {
       component="span"
       sx={{
         position: 'absolute',
-        top: 8,
-        left: 8,
+        top: 0,
+        right: 0,
         zIndex: 1,
         display: 'inline-flex',
         alignItems: 'center',
-        px: 0.85,
-        py: 0.35,
-        borderRadius: `${radii.pill}px`,
-        border: '1px solid',
-        borderColor: t.borde,
+        px: { xs: 1.25, sm: 1.5 },
+        py: 0.7,
+        borderBottomLeftRadius: `${radii.md}px`,
         bgcolor: t.fondo,
         color: t.texto,
         fontFamily: monoFamily,
-        fontSize: '0.64rem',
+        fontSize: { xs: '0.74rem', sm: '0.8rem' },
         fontWeight: 700,
-        letterSpacing: '0.02em',
+        letterSpacing: '0.04em',
         lineHeight: 1.2,
         whiteSpace: 'nowrap',
       }}
@@ -130,6 +132,7 @@ export default function PanelCard({ panel, cantidad, onCambiar, onVerCaracterist
         display: 'flex',
         // width al 100%: el Reveal que la envuelve es flex y sin esto la
         // card se encoge a su contenido en vez de llenar la columna
+        position: 'relative',
         width: '100%',
         height: '100%',
         borderRadius: `${radii.md}px`,
@@ -162,16 +165,13 @@ export default function PanelCard({ panel, cantidad, onCambiar, onVerCaracterist
           loading="lazy"
           sx={{ width: '100%', height: '100%', objectFit: 'contain', p: 1.25 }}
         />
-        {/* Esquina superior izquierda de la tarjeta: sobre la foto hay
-            aire de sobra y el nombre del panel no se parte en dos líneas */}
-        {mm != null && <InsigniaEspesor mm={mm} tono={tonoEspesor} />}
         {elegido && (
           <Box
             aria-hidden
             sx={{
               position: 'absolute',
               top: 8,
-              right: 8,
+              left: 8,
               width: 22,
               height: 22,
               borderRadius: '50%',
@@ -186,8 +186,11 @@ export default function PanelCard({ panel, cantidad, onCambiar, onVerCaracterist
         )}
       </Box>
 
-      {/* Datos y acción */}
-      <Box sx={{ flex: 1, minWidth: 0, p: { xs: 1.75, sm: 2 }, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+      {mm != null && <InsigniaEspesor mm={mm} tono={tonoEspesor} />}
+
+      {/* Datos y acción. Arriba deja el alto de la insignia de espesor
+          para que el nombre nunca quede debajo de ella */}
+      <Box sx={{ flex: 1, minWidth: 0, p: { xs: 1.75, sm: 2 }, pt: mm != null ? { xs: 5, sm: 5.25 } : undefined, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
         <Box>
           <Typography sx={{ fontWeight: 700, fontSize: '1.02rem', lineHeight: 1.25 }}>{panel.nombre}</Typography>
           {panel.dimensiones && (

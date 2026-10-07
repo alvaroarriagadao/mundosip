@@ -109,7 +109,6 @@ function MiniVideo() {
 export default function VistaPreviaProyecto({ datos }: { datos: DatosVistaPrevia }) {
   const specs = [
     { label: 'Superficie', valor: datos.superficie ? `${datos.superficie} m²` : '—' },
-    { label: 'Año diseño', valor: datos.anoDiseno || '—' },
     { label: 'Año constr.', valor: datos.anoConstruccion || '—' },
     { label: 'Ubicación', valor: datos.lugar ? `${datos.lugar}, ${datos.regionNombre}` : '—' },
   ];
@@ -219,8 +218,8 @@ export default function VistaPreviaProyecto({ datos }: { datos: DatosVistaPrevia
           mb: 2.5,
         }}
       >
-        {specs.map((s) => (
-          <Box key={s.label}>
+        {specs.map((s, i) => (
+          <Box key={s.label} sx={{ gridColumn: i === specs.length - 1 ? '1 / -1' : 'auto' }}>
             <Typography sx={{ fontFamily: monoFamily, fontSize: '0.55rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: colors.tanLight }}>
               {s.label}
             </Typography>

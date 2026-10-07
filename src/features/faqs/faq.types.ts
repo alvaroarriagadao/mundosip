@@ -1,7 +1,7 @@
 /**
- * Estructura FIJA de una pregunta frecuente.
- * En fase 2 el equipo las administra desde el CMS: pregunta,
- * respuesta y, opcionalmente, una lista de puntos destacados.
+ * Estructura de una pregunta frecuente. El equipo las administra en
+ * /admin/preguntas: pregunta, respuesta y, opcionalmente, una lista de
+ * puntos destacados.
  */
 
 export interface PuntoFaq {

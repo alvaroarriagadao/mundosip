@@ -306,9 +306,10 @@ export default function ListadoModelos({ modelos }: { modelos: Modelo[] }) {
    */
   async function reordenar(desde: number, hasta: number) {
     if (desde === hasta || hasta < 0 || hasta >= lista.length) return;
+    // Intercambio entre dos (igual que en /admin/paneles): soltar el 6
+    // sobre el 1 los cambia de lugar y el resto queda quieto
     const copia = [...lista];
-    const [movido] = copia.splice(desde, 1);
-    copia.splice(hasta, 0, movido);
+    [copia[desde], copia[hasta]] = [copia[hasta], copia[desde]];
     setLista(copia);
     setEstadoOrden('guardando');
     try {
@@ -339,7 +340,7 @@ export default function ListadoModelos({ modelos }: { modelos: Modelo[] }) {
         </Typography>
       </Box>
       <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mb: 1.5, mt: -1.5 }}>
-        El orden de esta lista es el orden en /modelos: arrastra una fila o usa las flechas. Se guarda solo.
+        El orden de esta lista es el orden en /modelos: suelta una fila sobre otra para intercambiarlas, o usa las flechas. Se guarda solo.
       </Typography>
 
       <AnimatePresence initial={false}>

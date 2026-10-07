@@ -421,3 +421,24 @@ insert into promocion (id) values (1) on conflict (id) do nothing;
 update cotizacion_secciones
 set nombre = 'Instalación y tabiquerías'
 where nombre = 'Tabiquerías';
+
+-- ------------------------------------------------------------
+--  MIGRACIÓN 012 — Preguntas frecuentes administrables
+--
+--  Antes vivían fijas en src/data/faqs.ts. Ahora se editan en
+--  /admin/preguntas: pregunta, respuesta y/o lista de puntos
+--  destacados ({titulo, texto}), orden y visible/oculta.
+--  La primera vez que se abre el admin, la tabla vacía se llena con
+--  las preguntas que estaban en el código (ver faqs.db.ts).
+-- ------------------------------------------------------------
+create table if not exists faqs (
+  id          uuid primary key default gen_random_uuid(),
+  pregunta    text not null check (length(trim(pregunta)) >= 5),
+  respuesta   text,
+  puntos      jsonb not null default '[]'::jsonb,
+  orden       integer not null default 0,
+  publicado   boolean not null default true,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+create index if not exists faqs_orden_idx on faqs (orden);

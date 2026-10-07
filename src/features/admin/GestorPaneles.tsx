@@ -3,7 +3,7 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, ChevronLeft, ChevronRight, GripVertical, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Check, GripVertical, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 
 import Button from '@/components/ui/Button';
@@ -21,8 +21,9 @@ import { etiquetaSx, inputNumeroSx, inputSx } from './ui';
 /**
  * Gestor de productos de la tienda /paneles — pensado para alguien NO
  * técnico. Muestra las MISMAS tarjetas que ve el cliente, en la misma
- * grilla y al mismo ancho, para ordenar "viendo" la tienda: se arrastran
- * (o se mueven con las flechas) y el orden se guarda solo. "Editar" abre
+ * grilla y al mismo ancho, para ordenar "viendo" la tienda: se arrastra
+ * una tarjeta sobre otra y las dos INTERCAMBIAN lugar (el resto no se
+ * mueve), o se elige la posición en el selector. Se guarda solo. "Editar" abre
  * el formulario ahí mismo, el interruptor publica/oculta al tiro y
  * "Agregar un panel" usa el mismo formulario.
  */
@@ -210,7 +211,8 @@ interface TarjetaProductoProps {
   onEditar: (abrir: boolean) => void;
   onActualizado: (panel: PanelProducto) => void;
   onEliminado: () => void;
-  onMover: (delta: -1 | 1) => void;
+  /** Intercambia este producto con el que está en esa posición (1…total) */
+  onIrA: (posicion: number) => void;
 }
 
 /**
@@ -226,7 +228,7 @@ function TarjetaProducto({
   onEditar,
   onActualizado,
   onEliminado,
-  onMover,
+  onIrA,
 }: TarjetaProductoProps) {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -273,22 +275,40 @@ function TarjetaProducto({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, height: '100%' }}>
-      {/* Barra de acciones: asa + posición, flechas, visible, editar, borrar */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minHeight: 34 }}>
+      {/* Barra de acciones: asa + posición, visible, editar, borrar */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minHeight: 34 }}>
+        <Box title="Arrastra la tarjeta sobre otra para intercambiarlas" sx={{ display: 'inline-flex', color: colors.muted }}>
+          <GripVertical size={18} />
+        </Box>
+        {/* Selector de posición: elegir 1 en la tarjeta 6 las intercambia.
+            Sirve también en celular, donde arrastrar no funciona */}
         <Box
-          title="Arrastra para cambiar el orden"
-          sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, color: colors.muted, pr: 0.5 }}
+          component="select"
+          value={posicion}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onIrA(Number(e.target.value))}
+          aria-label={`Posición de ${panel.nombre} en la tienda`}
+          title="Posición en la tienda"
+          sx={{
+            fontFamily: monoFamily,
+            fontWeight: 700,
+            fontSize: '0.85rem',
+            color: colors.ink,
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: `${radii.sm}px`,
+            pl: 1,
+            pr: 0.5,
+            py: 0.4,
+            cursor: 'pointer',
+            '&:hover, &:focus': { borderColor: colors.teal, outline: 'none' },
+          }}
         >
-          <GripVertical size={16} />
-          <Typography component="span" sx={{ fontFamily: monoFamily, fontWeight: 700, fontSize: '0.8rem', color: colors.ink }}>
-            {posicion}
-          </Typography>
-        </Box>
-        <Box component="button" type="button" onClick={() => onMover(-1)} disabled={posicion === 1} aria-label={`Mover ${panel.nombre} antes`} title="Mover antes" sx={{ ...iconoSx, '&:hover:not(:disabled)': { color: colors.teal, bgcolor: 'rgba(32, 78, 95, 0.08)' } }}>
-          <ChevronLeft size={16} />
-        </Box>
-        <Box component="button" type="button" onClick={() => onMover(1)} disabled={posicion === total} aria-label={`Mover ${panel.nombre} después`} title="Mover después" sx={{ ...iconoSx, '&:hover:not(:disabled)': { color: colors.teal, bgcolor: 'rgba(32, 78, 95, 0.08)' } }}>
-          <ChevronRight size={16} />
+          {Array.from({ length: total }, (_, k) => (
+            <option key={k + 1} value={k + 1}>
+              {k + 1}
+            </option>
+          ))}
         </Box>
 
         <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -379,15 +399,15 @@ export default function GestorPaneles({ paneles }: { paneles: PanelProducto[] })
   const visibles = lista.filter((p) => p.publicado).length;
 
   /**
-   * Mueve un producto y guarda el orden al tiro: la posición aquí es la
-   * posición en /paneles (1 = arriba a la izquierda). Sin botón "guardar"
-   * porque arrastrar y después tener que guardar se olvida.
+   * Intercambia dos productos y guarda el orden al tiro. Es un CAMBIO
+   * ENTRE DOS: llevar el 6 al 1 deja el 1 en el 6 y el resto quieto (con
+   * "insertar" se corrían todos los de en medio y costaba entender qué
+   * pasó). La posición aquí es la de /paneles (1 = arriba a la izquierda).
    */
-  async function reordenar(desde: number, hasta: number) {
-    if (desde === hasta || hasta < 0 || hasta >= lista.length) return;
+  async function intercambiar(a: number, b: number) {
+    if (a === b || a < 0 || b < 0 || a >= lista.length || b >= lista.length) return;
     const copia = [...lista];
-    const [movido] = copia.splice(desde, 1);
-    copia.splice(hasta, 0, movido);
+    [copia[a], copia[b]] = [copia[b], copia[a]];
     setLista(copia);
     setEstadoOrden('guardando');
     try {
@@ -515,7 +535,7 @@ export default function GestorPaneles({ paneles }: { paneles: PanelProducto[] })
                 onDrop={(e: React.DragEvent) => {
                   if (arrastrando == null) return;
                   e.preventDefault();
-                  void reordenar(arrastrando, i);
+                  void intercambiar(arrastrando, i);
                   setArrastrando(null);
                   setDestino(null);
                 }}
@@ -523,8 +543,10 @@ export default function GestorPaneles({ paneles }: { paneles: PanelProducto[] })
                   gridColumn: editando ? '1 / -1' : 'auto',
                   cursor: editando ? 'default' : 'grab',
                   opacity: arrastrando === i ? 0.4 : 1,
-                  outline: destino === i && arrastrando !== i ? `2px dashed ${colors.teal}` : 'none',
+                  // La tarjeta de destino se marca fuerte: es con la que se intercambia
+                  outline: destino === i && arrastrando !== i ? `3px solid ${colors.tan}` : 'none',
                   outlineOffset: 4,
+                  bgcolor: destino === i && arrastrando !== i ? 'rgba(185, 138, 78, 0.08)' : 'transparent',
                   borderRadius: `${radii.md}px`,
                   transition: `opacity 0.15s ${motionTokens.easeCss}`,
                   '&:active': { cursor: editando ? 'default' : 'grabbing' },
@@ -539,7 +561,7 @@ export default function GestorPaneles({ paneles }: { paneles: PanelProducto[] })
                   onEditar={(abrir) => setEditandoId(abrir ? panel.id : null)}
                   onActualizado={(actualizado) => setLista((prev) => prev.map((p) => (p.id === actualizado.id ? actualizado : p)))}
                   onEliminado={() => setLista((prev) => prev.filter((p) => p.id !== panel.id))}
-                  onMover={(delta) => void reordenar(i, i + delta)}
+                  onIrA={(posicion) => void intercambiar(i, posicion - 1)}
                 />
               </Box>
             );
@@ -567,7 +589,8 @@ export default function GestorPaneles({ paneles }: { paneles: PanelProducto[] })
           </Typography>
           <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', mb: 1.5 }}>Ordena viendo la tienda</Typography>
           <Box component="ul" sx={{ m: 0, pl: 2.25, display: 'flex', flexDirection: 'column', gap: 1, fontSize: '0.9rem', lineHeight: 1.5, color: 'rgba(246, 241, 234, 0.78)' }}>
-            <li>Arrastra una tarjeta a otra posición, o usa las flechas ‹ ›. Se guarda solo.</li>
+            <li>Arrastra una tarjeta y suéltala sobre otra: las dos intercambian lugar y el resto no se mueve.</li>
+            <li>También puedes elegir la posición en el número de cada tarjeta. Se guarda solo.</li>
             <li>El 1 va arriba a la izquierda; se lee de izquierda a derecha.</li>
             <li>Los productos ocultos se ven atenuados y no salen en la tienda.</li>
             <li>La etiqueta de color muestra el espesor del OSB que escribes en “Espesor OSB”.</li>

@@ -1,4 +1,5 @@
 import type { Faq } from '@/features/faqs/faq.types';
+import { getFaqsPublicadas } from '@/features/faqs/faqs.db';
 import type { Modelo } from '@/features/modelos/modelo.types';
 import { getModeloPorSlug, getModelosPublicados } from '@/features/modelos/modelos.db';
 import type { Promocion } from '@/features/modelos/precio';
@@ -10,7 +11,6 @@ import {
   getRegionesConProyectos,
 } from '@/features/proyectos/proyectos.db';
 
-import { faqs } from './faqs';
 
 /**
  * ÚNICA capa de acceso a datos del sitio.
@@ -20,8 +20,9 @@ import { faqs } from './faqs';
  * tocan. Por eso todas son async aunque hoy no lo necesiten.
  */
 
+// Las preguntas frecuentes viven en Neon: se administran en /admin/preguntas
 export async function getFaqs(): Promise<Faq[]> {
-  return [...faqs].sort((a, b) => a.orden - b.orden);
+  return getFaqsPublicadas();
 }
 
 // Los modelos viven en Neon y los administra el equipo en /admin/modelos.

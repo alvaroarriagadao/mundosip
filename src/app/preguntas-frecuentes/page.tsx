@@ -19,6 +19,9 @@ export const metadata: Metadata = {
     'Todo lo que necesitas saber antes de construir en panel SIP: ventajas, espesores, plazos, costos y más, respondido por MundoSIP.',
 };
 
+// Las preguntas las edita el equipo en /admin/preguntas: sin caché
+export const dynamic = 'force-dynamic';
+
 const TRUST_CHIPS = ['Respuestas claras', 'Sin tecnicismos', 'Respondemos rápido'];
 
 export default async function PreguntasFrecuentesPage() {
