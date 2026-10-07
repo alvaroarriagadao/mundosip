@@ -13,11 +13,19 @@ import { getPanelesPublicados } from '@/features/paneles/paneles.db';
 import { colors, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
 import { enlaceWhatsApp } from '@/lib/contacto';
+import JsonLd from '@/components/seo/JsonLd';
+import { schemaListaPaneles, schemaMigas } from '@/features/seo/schema';
+import { OG_BASE } from '@/lib/site';
+
+const TITULO = 'Venta de paneles SIP por unidad · precios y espesores';
+const DESCRIPCION =
+  'Compra paneles SIP por unidad fabricados en Chile: 1220 x 2440 mm en espesores de 72 a 225 mm, OSB de 9.5 y 11.1 mm. Precios con IVA, cotización en PDF al instante y despacho a todo Chile.';
 
 export const metadata: Metadata = {
-  title: 'Paneles SIP',
-  description:
-    'Venta de paneles SIP por unidad: elige espesores, arma tu pedido y descarga tu cotización en PDF al instante. Despacho a todo Chile.',
+  title: TITULO,
+  description: DESCRIPCION,
+  alternates: { canonical: '/paneles' },
+  openGraph: { ...OG_BASE, title: TITULO, description: DESCRIPCION, url: '/paneles' },
 };
 
 // El catálogo vive en la DB y lo edita el equipo en /admin/paneles
@@ -53,6 +61,7 @@ export default async function PanelesPage() {
 
   return (
     <>
+      <JsonLd data={[schemaListaPaneles(paneles), schemaMigas([{ nombre: 'Inicio', ruta: '/' }, { nombre: 'Paneles SIP', ruta: '/paneles' }])]} />
       <Section tone="paper" belowHeader sx={{ pb: { xs: 6, md: 8 } }}>
         <Container>
           {/* Cabecera en una franja: título contenido + bajada al lado */}

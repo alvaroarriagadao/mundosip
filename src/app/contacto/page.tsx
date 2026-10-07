@@ -15,11 +15,17 @@ import TelefonoCopiable from '@/features/contacto/TelefonoCopiable';
 import { colors, layout, radii, scrims } from '@/theme/tokens';
 import { displayFamily, monoFamily } from '@/theme/typography';
 import { enlaceWhatsApp } from '@/lib/contacto';
+import { OG_BASE } from '@/lib/site';
+
+const TITULO = 'Contacto · cotiza tu casa o paneles SIP';
+const DESCRIPCION =
+  'Cotiza tu casa en panel SIP, tu panelizado a medida o la compra de paneles. Escríbenos por WhatsApp, correo o formulario: respondemos dentro de 24 horas hábiles. Fábrica en Purranque, Los Lagos.';
 
 export const metadata: Metadata = {
-  title: 'Contacto',
-  description:
-    'Cotiza tu casa en panel SIP, tu panelizado a medida o la compra de paneles. Respondemos dentro de 24 horas hábiles.',
+  title: TITULO,
+  description: DESCRIPCION,
+  alternates: { canonical: '/contacto' },
+  openGraph: { ...OG_BASE, title: TITULO, description: DESCRIPCION, url: '/contacto' },
 };
 
 const CANALES = [

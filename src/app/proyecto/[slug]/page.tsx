@@ -15,6 +15,9 @@ import ProjectResena from '@/features/proyectos/ProjectResena';
 import ProjectVideo from '@/features/proyectos/ProjectVideo';
 import { getProyectoPorSlug } from '@/features/proyectos/proyectos.db';
 import { colors, radii } from '@/theme/tokens';
+import JsonLd from '@/components/seo/JsonLd';
+import { schemaMigas, schemaProyecto } from '@/features/seo/schema';
+import { OG_BASE } from '@/lib/site';
 
 interface ProyectoPageProps {
   params: Promise<{ slug: string }>;
@@ -28,9 +31,20 @@ export async function generateMetadata({ params }: ProyectoPageProps): Promise<M
   const { slug } = await params;
   const proyecto = await getProyectoPorSlug(slug);
   if (!proyecto) return {};
+  const titulo = `${proyecto.nombre} · casa en panel SIP en ${proyecto.ubicacion}`;
+  const descripcion = `${proyecto.resumen} ${proyecto.superficieM2} m² construidos en ${proyecto.anoConstruccion} por MundoSIP.`;
   return {
-    title: proyecto.nombre,
-    description: proyecto.resumen,
+    title: titulo,
+    description: descripcion,
+    alternates: { canonical: `/proyecto/${proyecto.slug}` },
+    openGraph: {
+      ...OG_BASE,
+      type: 'article',
+      title: titulo,
+      description: descripcion,
+      url: `/proyecto/${proyecto.slug}`,
+      images: [{ url: proyecto.portada.url, alt: proyecto.portada.alt }],
+    },
   };
 }
 
@@ -53,6 +67,7 @@ export default async function ProyectoPage({ params, searchParams }: ProyectoPag
 
   return (
     <>
+      <JsonLd data={[schemaProyecto(proyecto), schemaMigas([{ nombre: 'Inicio', ruta: '/' }, { nombre: 'Proyectos', ruta: '/proyectos' }, { nombre: proyecto.nombre, ruta: `/proyecto/${proyecto.slug}` }])]} />
       {!proyecto.publicado && (
         <Box
           sx={{

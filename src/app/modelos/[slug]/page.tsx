@@ -18,6 +18,9 @@ import { getPromocion } from '@/features/modelos/promocion.db';
 import { formatCLP } from '@/lib/format';
 import { colors, radii } from '@/theme/tokens';
 import { monoFamily } from '@/theme/typography';
+import JsonLd from '@/components/seo/JsonLd';
+import { schemaMigas, schemaModelo } from '@/features/seo/schema';
+import { OG_BASE } from '@/lib/site';
 
 interface ModeloPageProps {
   params: Promise<{ slug: string }>;
@@ -31,9 +34,20 @@ export async function generateMetadata({ params }: ModeloPageProps): Promise<Met
   const { slug } = await params;
   const modelo = await getModeloPorSlug(slug);
   if (!modelo) return {};
+  const titulo = `Casa ${modelo.nombre} · ${modelo.superficieM2} m², ${modelo.habitaciones} dormitorios · kit en panel SIP`;
+  const descripcion = `${modelo.resumen} Kit de autoconstrucción desde ${formatCLP(modelo.precioDesdeCLP)} con IVA incluido, planos y capacitación.`;
   return {
-    title: `${modelo.nombre} · ${modelo.superficieM2} m²`,
-    description: modelo.resumen,
+    title: titulo,
+    description: descripcion,
+    alternates: { canonical: `/modelos/${modelo.slug}` },
+    openGraph: {
+      ...OG_BASE,
+      type: 'website',
+      title: titulo,
+      description: descripcion,
+      url: `/modelos/${modelo.slug}`,
+      images: [{ url: modelo.portada.url, alt: modelo.portada.alt }],
+    },
   };
 }
 
@@ -58,6 +72,7 @@ export default async function ModeloPage({ params, searchParams }: ModeloPagePro
 
   return (
     <>
+      <JsonLd data={[schemaModelo(modelo, precioKit), schemaMigas([{ nombre: 'Inicio', ruta: '/' }, { nombre: 'Modelos', ruta: '/modelos' }, { nombre: modelo.nombre, ruta: `/modelos/${modelo.slug}` }])]} />
       {!modelo.publicado && (
         <Box
           sx={{

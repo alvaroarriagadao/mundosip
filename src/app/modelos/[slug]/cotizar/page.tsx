@@ -37,6 +37,9 @@ export async function generateMetadata({ params }: CotizarPageProps): Promise<Me
   return {
     title: `Cotizar ${modelo.nombre} llave en mano`,
     description: `Arma tu cotización llave en mano del modelo ${modelo.nombre}: elige las partidas que necesitas y descarga tu PDF al instante.`,
+    // Es una herramienta, no una página de destino: la ficha del modelo es la que se indexa
+    robots: { index: false, follow: true },
+    alternates: { canonical: `/modelos/${modelo.slug}` },
   };
 }
 
