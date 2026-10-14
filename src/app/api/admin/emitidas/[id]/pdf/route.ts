@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { esAdmin } from '@/features/admin/auth';
 import type { SnapshotCotizacion } from '@/features/cotizador/cotizacion.types';
 import { formatearFolio } from '@/features/cotizador/folio';
+import { contenidoKit } from '@/features/cotizador/kitIncluye';
 import CotizacionPDF from '@/features/cotizador/pdf/CotizacionPDF';
 
 interface Contexto {
@@ -47,6 +48,9 @@ export async function GET(_request: Request, { params }: Contexto) {
     const folio = formatearFolio(fila.folio_num);
     const cotizacion: SnapshotCotizacion = {
       ...fila.snapshot,
+      // Folios emitidos antes de guardar el contenido del kit: se completa
+      // con el contenido actual del modelo para que el PDF también lo detalle
+      kitIncluye: fila.snapshot.kitIncluye ?? (await contenidoKit(fila.snapshot.modeloSlug, fila.snapshot.kit)),
       folio,
       fechaISO: new Date(fila.created_at).toISOString(),
     };

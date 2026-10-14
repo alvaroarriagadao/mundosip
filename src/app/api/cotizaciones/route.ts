@@ -9,6 +9,7 @@ import { emitirCotizacionSchema } from '@/features/cotizador/cotizacion.schema';
 import { KIT_LABEL, type SnapshotCotizacion } from '@/features/cotizador/cotizacion.types';
 import { getPlantilla } from '@/features/cotizador/cotizador.db';
 import { formatearFolio } from '@/features/cotizador/folio';
+import { contenidoKit } from '@/features/cotizador/kitIncluye';
 import CotizacionPDF from '@/features/cotizador/pdf/CotizacionPDF';
 
 /**
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const plantilla = await getPlantilla(modeloSlug, kit);
+    const [plantilla, kitIncluye] = await Promise.all([getPlantilla(modeloSlug, kit), contenidoKit(modeloSlug, kit)]);
     if (!plantilla) {
       return NextResponse.json(
         { ok: false, error: 'Este modelo aún no tiene cotizador disponible.' },
@@ -85,6 +86,7 @@ export async function POST(request: Request) {
       cliente: { nombre, email, telefono: telefono || null },
       secciones,
       seccionesTotales: plantilla.secciones.length,
+      kitIncluye,
       totales,
     };
 

@@ -1,7 +1,7 @@
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
 import { subtotalSeccion, totalItem } from '../calcular';
-import { KIT_LABEL, type SnapshotCotizacion } from '../cotizacion.types';
+import { KIT_LABEL, type SeccionCotizacion, type SnapshotCotizacion } from '../cotizacion.types';
 
 /**
  * PDF de la cotización llave en mano — se renderiza en el servidor a
@@ -115,6 +115,24 @@ const s = StyleSheet.create({
   subtotalEtiqueta: { color: MUTED },
   subtotalValor: { fontFamily: 'Helvetica-Bold', width: 66, textAlign: 'right' },
 
+  /* ── Detalle del kit de autoconstrucción ── */
+  kitDetalle: {
+    marginTop: 4,
+    marginHorizontal: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    borderWidth: 0.5,
+    borderColor: LINE,
+    borderRadius: 3,
+  },
+  kitTitulo: { fontFamily: 'Helvetica-Bold', fontSize: 7, letterSpacing: 1.2, color: TAN, marginBottom: 4 },
+  kitColumnas: { flexDirection: 'row', gap: 12 },
+  kitColumna: { flex: 1 },
+  kitItem: { flexDirection: 'row', marginBottom: 2 },
+  kitVineta: { width: 9, color: TAN, fontFamily: 'Helvetica-Bold' },
+  kitTexto: { flex: 1, color: INK },
+  kitExtrasTitulo: { fontFamily: 'Helvetica-Bold', fontSize: 7, letterSpacing: 1.2, color: TEAL, marginTop: 4, marginBottom: 4 },
+
   /* ── Totales ── */
   totales: {
     marginTop: 8,
@@ -159,6 +177,56 @@ const s = StyleSheet.create({
   },
   pieTexto: { fontSize: 7, color: MUTED },
 });
+
+/**
+ * La sección del kit de autoconstrucción: la que se llama así o, si el
+ * equipo la renombró, la primera "incluida siempre".
+ */
+function esSeccionKit(seccion: SeccionCotizacion, secciones: SeccionCotizacion[]): boolean {
+  const porNombre = secciones.find((x) => /kit\s+de\s+autoconstrucci/i.test(x.nombre));
+  return (porNombre ?? secciones.find((x) => x.obligatoria))?.id === seccion.id;
+}
+
+/** Parte una lista en dos columnas: la primera mitad a la izquierda */
+function enDosColumnas(lista: string[]): [string[], string[]] {
+  const mitad = Math.ceil(lista.length / 2);
+  return [lista.slice(0, mitad), lista.slice(mitad)];
+}
+
+/** Columnas fijas (no flexWrap): con wrap, react-pdf separa de más las filas */
+function ListaKit({ items, vineta, negrita = false }: { items: string[]; vineta: string; negrita?: boolean }) {
+  return (
+    <View style={s.kitColumnas}>
+      {enDosColumnas(items).map((columna, i) => (
+        <View key={i} style={s.kitColumna}>
+          {columna.map((item) => (
+            <View key={item} style={s.kitItem}>
+              <Text style={s.kitVineta}>{vineta}</Text>
+              <Text style={negrita ? [s.kitTexto, { fontFamily: 'Helvetica-Bold' }] : s.kitTexto}>{item}</Text>
+            </View>
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** Lo que trae el kit, en dos columnas, bajo su única partida de precio */
+function DetalleKit({ items, extras, kit }: { items: string[]; extras: string[]; kit: string }) {
+  return (
+    <View style={s.kitDetalle} wrap={false}>
+      <Text style={s.kitTitulo}>EL KIT INCLUYE</Text>
+      {/* "•" sí existe en Helvetica WinAnsi (el check ✓ no) */}
+      <ListaKit items={items} vineta="•" />
+      {extras.length > 0 ? (
+        <>
+          <Text style={s.kitExtrasTitulo}>ADEMÁS, POR SER {kit.toUpperCase()}</Text>
+          <ListaKit items={extras} vineta="+" negrita />
+        </>
+      ) : null}
+    </View>
+  );
+}
 
 const CABECERA_COLUMNAS = (
   <View style={[s.filaItem, s.filaCabecera]} fixed>
@@ -250,6 +318,13 @@ export default function CotizacionPDF({ cotizacion }: { cotizacion: SnapshotCoti
                 <Text style={s.colTotal}>{clp.format(totalItem(item))}</Text>
               </View>
             ))}
+            {cotizacion.kitIncluye && esSeccionKit(seccion, cotizacion.secciones) ? (
+              <DetalleKit
+                items={cotizacion.kitIncluye.items}
+                extras={cotizacion.kitIncluye.extras}
+                kit={KIT_LABEL[cotizacion.kit]}
+              />
+            ) : null}
             <View style={s.filaSubtotal}>
               <Text style={s.subtotalEtiqueta}>Subtotal {seccion.nombre.toLowerCase()}</Text>
               <Text style={s.subtotalValor}>{clp.format(subtotalSeccion(seccion))}</Text>

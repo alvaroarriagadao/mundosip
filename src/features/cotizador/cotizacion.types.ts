@@ -92,5 +92,19 @@ export interface SnapshotCotizacion {
   secciones: SeccionCotizacion[];
   /** Cuántas secciones tenía la plantilla al emitir (para marcar alcance parcial) */
   seccionesTotales?: number;
+  /**
+   * Qué trae el kit de autoconstrucción, tal como lo muestra la ficha del
+   * modelo al momento de emitir. En el PDF se detalla bajo la partida del
+   * kit (que tiene un solo ítem de precio). Opcional: los folios emitidos
+   * antes de existir este campo no lo traen.
+   */
+  kitIncluye?: ContenidoKit;
   totales: TotalesCotizacion;
+}
+
+export interface ContenidoKit {
+  /** Lo que traen ambos kits (Kit Inicial) */
+  items: string[];
+  /** Solo en Kit Full: lo que agrega sobre el Inicial (el piso) */
+  extras: string[];
 }
