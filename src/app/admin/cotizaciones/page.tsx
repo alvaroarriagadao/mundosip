@@ -7,8 +7,10 @@ import Container from '@/components/ui/Container';
 import Eyebrow from '@/components/ui/Eyebrow';
 import Section from '@/components/ui/Section';
 import BotonSalir from '@/features/admin/BotonSalir';
+import EditorFolio from '@/features/admin/EditorFolio';
 import ListadoPlantillas from '@/features/admin/ListadoPlantillas';
 import { exigirAdmin } from '@/features/admin/auth';
+import { getEstadoFolio } from '@/features/admin/folios.db';
 import { KIT_LABEL } from '@/features/cotizador/cotizacion.types';
 import { getEmitidas, getPlantillasResumen } from '@/features/cotizador/cotizador.db';
 import { formatearFolio } from '@/features/cotizador/folio';
@@ -46,7 +48,7 @@ const cabeceraSx = {
 /** Panel del equipo: plantillas editables + cotizaciones emitidas. */
 export default async function AdminCotizacionesPage() {
   await exigirAdmin();
-  const [plantillas, emitidas] = await Promise.all([getPlantillasResumen(), getEmitidas()]);
+  const [plantillas, emitidas, folio] = await Promise.all([getPlantillasResumen(), getEmitidas(), getEstadoFolio('casas')]);
 
   return (
     <Section tone="paper" belowHeader>
@@ -88,6 +90,7 @@ export default async function AdminCotizacionesPage() {
         <Typography variant="h3" component="h2" sx={{ mb: 2.5 }}>
           Cotizaciones emitidas
         </Typography>
+        <EditorFolio tipo="casas" inicial={folio} />
         {emitidas.length === 0 ? (
           <Typography sx={{ color: 'text.secondary' }}>
             Aún no hay cotizaciones emitidas desde el sitio.

@@ -7,8 +7,10 @@ import Container from '@/components/ui/Container';
 import Eyebrow from '@/components/ui/Eyebrow';
 import Section from '@/components/ui/Section';
 import BotonSalir from '@/features/admin/BotonSalir';
+import EditorFolio from '@/features/admin/EditorFolio';
 import GestorPaneles from '@/features/admin/GestorPaneles';
 import { exigirAdmin } from '@/features/admin/auth';
+import { getEstadoFolio } from '@/features/admin/folios.db';
 import { getPanelesAdmin, getPedidosPaneles } from '@/features/paneles/paneles.db';
 import { formatearFolioPedido } from '@/features/paneles/pedido.schema';
 import { formatCLP } from '@/lib/format';
@@ -45,7 +47,7 @@ const cabeceraSx = {
 /** Gestión de la tienda de paneles: productos + pedidos cotizados. */
 export default async function AdminPanelesPage() {
   await exigirAdmin();
-  const [paneles, pedidos] = await Promise.all([getPanelesAdmin(), getPedidosPaneles()]);
+  const [paneles, pedidos, folio] = await Promise.all([getPanelesAdmin(), getPedidosPaneles(), getEstadoFolio('paneles')]);
 
   return (
     <Section tone="paper" belowHeader>
@@ -86,6 +88,7 @@ export default async function AdminPanelesPage() {
         <Typography variant="h3" component="h2" sx={{ mb: 2.5 }}>
           Pedidos cotizados
         </Typography>
+        <EditorFolio tipo="paneles" inicial={folio} />
         {pedidos.length === 0 ? (
           <Typography sx={{ color: 'text.secondary' }}>
             Aún no hay cotizaciones de paneles desde el sitio.

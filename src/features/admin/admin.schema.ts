@@ -196,6 +196,16 @@ export type FaqInput = z.infer<typeof faqSchema>;
 /** Orden de las preguntas: mismo formato que el de modelos */
 export const ordenFaqsSchema = ordenModelosSchema;
 
+/** Número de la próxima cotización (casas o paneles) */
+export const folioSchema = z.object({
+  tipo: z.enum(['casas', 'paneles']),
+  siguiente: z
+    .number()
+    .int('Usa un número entero')
+    .min(1, 'Debe ser mayor a 0')
+    .max(9_999_999, 'Número demasiado grande'),
+});
+
 export type ModeloInput = z.infer<typeof modeloSchema>;
 export type ModeloListasInput = z.infer<typeof modeloListasSchema>;
 export type ModeloImagenesInput = z.infer<typeof modeloImagenesSchema>;
