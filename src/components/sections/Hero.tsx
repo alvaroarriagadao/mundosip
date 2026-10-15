@@ -3,6 +3,7 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 
 import Button from '@/components/ui/Button';
 import Container from '@/components/ui/Container';
@@ -24,6 +25,113 @@ const headlineLines = ['Tus ideas,', 'una estructura que las sostiene.'];
 
 const specs = ['Kits de autoconstrucción', 'Panelizado a medida', 'Despacho a todo Chile'];
 
+/**
+ * Video de fondo que también arranca en iPhone.
+ *
+ * iOS solo reproduce solo un video si está en silencio, dentro de la
+ * página y sin controles. Aun así, en modo de bajo consumo o dentro del
+ * navegador de Instagram lo bloquea y muestra un botón de play encima.
+ * Por eso: (1) se fuerza `muted` también como PROPIEDAD (React a veces
+ * solo pone el atributo y iOS mira la propiedad), (2) se intenta `play()`
+ * al montar y, si iOS lo rechaza, en el primer toque de la persona, que
+ * sí cuenta como permiso, y (3) el video queda INVISIBLE hasta que de
+ * verdad se está reproduciendo, con la foto de portada como fondo fijo
+ * detrás: si iOS lo bloquea, se ve la foto, nunca un botón de play.
+ */
+function VideoFondo({ src, poster }: { src: string; poster?: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+
+    const intentar = () => {
+      if (!video.paused) return;
+      video.play().catch(() => {
+        /* iOS lo bloqueó (bajo consumo / Instagram): queda la portada */
+      });
+    };
+    // Recién cuando hay imagen en movimiento se muestra el video. Se
+    // comprueba que avance de verdad: 'timeupdate' también se dispara al
+    // pausar, y un video detenido visible deja ver el botón de play de iOS
+    const mostrar = () => {
+      if (!video.paused && video.currentTime > 0) video.style.opacity = '1';
+    };
+    // Al volver a la pestaña o a la app, Safari pausa el video: se reanuda
+    const alVolver = () => {
+      if (document.visibilityState === 'visible') intentar();
+    };
+    // El primer toque desbloquea la reproducción en iOS
+    const eventos = ['touchend', 'click', 'keydown'] as const;
+
+    video.addEventListener('playing', mostrar);
+    // Respaldo: si el autoplay arrancó antes de que este efecto escuchara
+    // 'playing', el avance del tiempo igual lo delata
+    video.addEventListener('timeupdate', mostrar);
+    video.addEventListener('canplay', intentar);
+    eventos.forEach((e) => window.addEventListener(e, intentar, { passive: true }));
+    document.addEventListener('visibilitychange', alVolver);
+    mostrar();
+    intentar();
+
+    return () => {
+      video.removeEventListener('playing', mostrar);
+      video.removeEventListener('timeupdate', mostrar);
+      video.removeEventListener('canplay', intentar);
+      eventos.forEach((e) => window.removeEventListener(e, intentar));
+      document.removeEventListener('visibilitychange', alVolver);
+    };
+  }, []);
+
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        inset: 0,
+        // La portada vive aquí y no solo en `poster`: así se ve aunque el
+        // video siga oculto porque iOS no lo dejó arrancar
+        backgroundImage: poster ? `url(${poster})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      <Box
+        component="video"
+        ref={ref}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        disablePictureInPicture
+        disableRemotePlayback
+        controls={false}
+        poster={poster}
+        src={src}
+        // iOS antiguos solo respetan la versión con prefijo
+        {...{ 'webkit-playsinline': 'true', 'x5-playsinline': 'true' }}
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          pointerEvents: 'none',
+          opacity: 0,
+          transition: 'opacity 0.6s ease',
+          // Sin botón de play ni controles nativos, por si el video se muestra
+          '&::-webkit-media-controls, &::-webkit-media-controls-panel, &::-webkit-media-controls-play-button, &::-webkit-media-controls-overlay-play-button':
+            { display: 'none !important' },
+          '&::-webkit-media-controls-start-playback-button': { display: 'none !important', WebkitAppearance: 'none' },
+        }}
+      />
+    </Box>
+  );
+}
+
 /** Capa de fondo: gradiente arquitectónico + retícula + barras de marca, con Ken Burns */
 function HeroBackdrop({ videoSrc, posterSrc }: HeroProps) {
   const reduced = useReducedMotion();
@@ -31,16 +139,7 @@ function HeroBackdrop({ videoSrc, posterSrc }: HeroProps) {
   return (
     <Box aria-hidden sx={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
       {videoSrc ? (
-        <Box
-          component="video"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster={posterSrc}
-          src={videoSrc}
-          sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-        />
+        <VideoFondo src={videoSrc} poster={posterSrc} />
       ) : (
         <motion.div
           initial={false}
