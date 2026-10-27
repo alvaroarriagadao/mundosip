@@ -114,6 +114,25 @@ function parsearArchivo(nombreArchivo) {
   return { slug, kit, superficieM2 };
 }
 
+/**
+ * Asegura que el título nombre al modelo del ARCHIVO.
+ *
+ * El nombre del archivo es la fuente confiable (de ahí sale el slug que
+ * decide a qué modelo se asocia la plantilla); la fila "MODELO …" se
+ * escribe a mano en cada Excel y se puede quedar copiada de otro. Pasó:
+ * "LUMA 100M2 RADIER (KIT INICIAL).xlsx" traía "MODELO ULMO 100M2…" y
+ * el PDF de Luma salía titulado como Ulmo. Se corrige con aviso.
+ */
+function tituloDelModelo(titulo, nombreArchivo) {
+  const modelo = nombreArchivo.split(' ')[0].toUpperCase();
+  const sinTilde = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const enTitulo = titulo.match(/^MODELO\s+(\S+)/i)?.[1] ?? '';
+  if (sinTilde(enTitulo).toUpperCase() === sinTilde(modelo)) return titulo;
+  const corregido = titulo.replace(/^MODELO\s+\S+/i, `MODELO ${modelo}`);
+  console.warn(`  ⚠ ${nombreArchivo}: el título decía "${titulo}"; se usa "${corregido}"`);
+  return corregido;
+}
+
 async function leerCotizacion(ruta) {
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.readFile(ruta);
@@ -235,6 +254,7 @@ async function importar() {
     for (const archivo of archivos.sort()) {
       const { slug, kit, superficieM2 } = parsearArchivo(archivo);
       const plantilla = await leerCotizacion(resolve(process.cwd(), CARPETA, archivo));
+      plantilla.titulo = tituloDelModelo(plantilla.titulo, archivo);
 
       await cliente.query('begin');
       try {
